@@ -8,6 +8,16 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// // --- ВСТАВИТЬ ЭТО ---
+// app.use((req, res, next) => {
+//     console.log(`[REQUEST] ${req.method} ${req.url}`);
+//     next();
+// });
+
+// app.get('/ping', (req, res) => {
+//     console.log('Ping received!');
+//     res.send('PONG');
+// });
 
 app.use(cors()); 
 app.use(express.json()); 

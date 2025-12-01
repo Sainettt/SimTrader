@@ -1,7 +1,7 @@
 
 import axios from 'axios';
 
-const API_URL = 'http://10.0.2.2:5000/api/auth'; 
+const API_URL = 'http://10.0.2.2:4000/api/auth'; 
 
 const $api = axios.create({
     baseURL: API_URL,

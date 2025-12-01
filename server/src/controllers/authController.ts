@@ -3,9 +3,9 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import prisma from '../prisma';
 
-const generateJwt = (id: number, email: string, userName: string) => {
+const generateJwt = (id: number, email: string, userName: string, createdAt: Date) => {
     return jwt.sign(
-        { id, email, userName },
+        { id, email, userName, createdAt },
         process.env.JWT_SECRET || 'secret',
         { expiresIn: '24h' }
     );
@@ -37,7 +37,7 @@ class AuthController {
                 }
             });
 
-            const token = generateJwt(user.id, user.email, user.username);
+            const token = generateJwt(user.id, user.email, user.username, user.createdAt);
 
             return res.json({ token });
         } catch (e) {
@@ -60,7 +60,7 @@ class AuthController {
                 return res.status(400).json({ message: 'Incorrect password' });
             }
             
-            const token = generateJwt(user.id, user.email, user.username);
+            const token = generateJwt(user.id, user.email, user.username, user.createdAt);
 
             return res.json({ token });
         } catch (e) {
