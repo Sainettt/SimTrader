@@ -18,12 +18,12 @@ class AuthController {
             const { email, password } = req.body;
 
             if (!email || !password) {
-                return res.status(400).json({ message: 'Email и пароль обязательны' });
+                return res.status(400).json({ message: 'Email and password are required' });
             }
 
             const candidate = await prisma.user.findUnique({ where: { email } });
             if (candidate) {
-                return res.status(400).json({ message: 'Пользователь с таким email уже существует' });
+                return res.status(400).json({ message: 'User with this email already exists' });
             }
 
             const hashPassword = await bcrypt.hash(password, 5);
@@ -40,7 +40,7 @@ class AuthController {
             return res.json({ token });
         } catch (e) {
             console.error(e);
-            return res.status(500).json({ message: 'Ошибка регистрации' });
+            return res.status(500).json({ message: 'Registration error' });
         }
     }
 
@@ -50,12 +50,12 @@ class AuthController {
 
             const user = await prisma.user.findUnique({ where: { email } });
             if (!user) {
-                return res.status(400).json({ message: 'Пользователь не найден' });
+                return res.status(400).json({ message: 'User not found' });
             }
 
             const comparePassword = await bcrypt.compare(password, user.password);
             if (!comparePassword) {
-                return res.status(400).json({ message: 'Неверный пароль' });
+                return res.status(400).json({ message: 'Incorrect password' });
             }
             
             const token = generateJwt(user.id, user.email);
@@ -63,7 +63,7 @@ class AuthController {
             return res.json({ token });
         } catch (e) {
             console.error(e);
-            return res.status(500).json({ message: 'Ошибка входа' });
+            return res.status(500).json({ message: 'Login error' });
         }
     }
 }
