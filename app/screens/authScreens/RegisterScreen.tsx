@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { Keyboard, TouchableWithoutFeedback, View, ActivityIndicator } from 'react-native';
+import { Keyboard, TouchableWithoutFeedback, View, ActivityIndicator, Alert } from 'react-native';
 import AuthAskText from '../../components/AuthAskText';
 import RegisterFields from '../../components/RegisterFields'; // <-- Нужно доработать этот компонент
 import AuthSubmitButton from '../../components/AuthSubmitButton';
@@ -19,7 +19,19 @@ const RegisterScreen: React.FC<Props> = ({ navigation }: Props) => {
   const [confirmPassword, setConfirmPassword] = useState('');
 
   const handleRegister = () => {
-     register(username, email, password, confirmPassword);
+    if (password !== confirmPassword) {
+      Alert.alert('Registration Error', 'Passwords do not match');
+      return;
+    }
+    if (!username) {
+      Alert.alert('Error', 'Please enter a username');
+      return;
+    }
+    if (!email) {
+      Alert.alert('Error', 'Please enter an email');
+      return;
+    }
+     register(username, email, password);
   };
 
   return (
