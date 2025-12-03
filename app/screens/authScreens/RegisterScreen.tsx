@@ -7,7 +7,7 @@ import { authStyles } from '../../styles/authStyles';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '../../src/navigation/authTypes';
 import { AuthContext } from '../../context/AuthContext';
-import { isValidEmail, isValidPassword } from '../../utils/validation/validation';
+import { isValidEmail, isValidPassword } from '../../utils/validation';
 type Props = NativeStackScreenProps<AuthStackParamList, 'Register'>;
 
 const RegisterScreen: React.FC<Props> = ({ navigation }: Props) => {

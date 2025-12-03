@@ -110,7 +110,7 @@ export const appStyles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 5,
     marginTop: 35,
-    padding: 10,
+    paddingHorizontal: 15,
   },
   trendHeaderContainer: {
     width: '100%',
