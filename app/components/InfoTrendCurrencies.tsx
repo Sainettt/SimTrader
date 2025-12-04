@@ -30,7 +30,7 @@ const InfoTrendCurrencies: React.FC<Props> = ({ data }) => {
                     keyExtractor={(item) => item.id}
                     showsVerticalScrollIndicator={false} 
                     ListEmptyComponent={
-                        <Text style={localStyles.emptyListText}>
+                        <Text style={appStyles.emptyListText}>
                             Loading data...
                         </Text>
                     }
@@ -41,9 +41,6 @@ const InfoTrendCurrencies: React.FC<Props> = ({ data }) => {
 };
 
 const localStyles = StyleSheet.create({
-  emptyListText: {
-    textAlign: 'center', padding: 20, color: 'gray'
-  },
   marginPriceTextContainer:{
     marginLeft: 20,
   },

@@ -41,14 +41,17 @@ export const appStyles = StyleSheet.create({
     color: '#EEEEEE',
   },
   currencyNameAndPriceText: {
-    fontSize: 32,
+    fontSize: 20,
     fontFamily: 'Poppins-Regular',
     color: '#FFFFFF',
   },
   currencyChangeText: {
-    fontSize: 20,
+    fontSize: 14,
     fontFamily: 'Poppins-Medium',
     color: '#FFFFFF',
+  },
+  emptyListText: {
+    textAlign: 'center', padding: 20, color: 'gray'
   },
 
   topUpButton: {
@@ -114,7 +117,7 @@ export const appStyles = StyleSheet.create({
   },
   trendHeaderContainer: {
     width: '100%',
-    height: 455,
+    height: 460,
     borderRadius: 10,
     backgroundColor: '#636363',
   },
@@ -138,20 +141,32 @@ export const appStyles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   currencyChangePositiveContainer: {
-    width: 75,
-    height: 35,
+    width: 55,
+    height: 30,
+    marginBottom: 5,
     backgroundColor: '#83EDA6',
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
   currencyChangeNegativeContainer: {
-    width: 75,
-    height: 35,
+    width: 55,
+    height: 30,
+    marginBottom: 5,
     backgroundColor: '#EB5B5B',
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  topUpContinueButton: {
+    width: 230,
+    height: 50,
+    backgroundColor: '#83EDA6',
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 260,
+    position: '',
   },
 
   title: {

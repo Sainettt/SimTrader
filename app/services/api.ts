@@ -19,8 +19,8 @@ export const authAPI = {
     }
 };
 export const currencyAPI = {
-    async getPopular() {
-        const response = await $api.get('/currency/popular');
+    async getTopCryptos(limit: number = 100) {
+        const response = await $api.get(`/currency/list?limit=${limit}`);
         return response.data;
     }
 };

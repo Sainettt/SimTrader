@@ -19,7 +19,7 @@ const MainScreen: React.FC<MainProps> = ({ navigation }: MainProps) => {
 
   const fetchCurrencies = async () => {
     try {
-      const data = await currencyAPI.getPopular();
+      const data = await currencyAPI.getTopCryptos(10);
       setCurrencies(data);
     } catch (e) {
       console.log(e);
@@ -36,7 +36,7 @@ const MainScreen: React.FC<MainProps> = ({ navigation }: MainProps) => {
           <Text style={appStyles.totalBalanceText}>Total balance</Text>
         </View>
         <View style={appStyles.balanceContainer}>
-          <Text style={appStyles.balanceText}>{totalBalance}zl</Text>
+          <Text style={appStyles.balanceText}>{totalBalance}$</Text>
           <TouchableOpacity
             style={appStyles.topUpButton}
             onPress={() => {

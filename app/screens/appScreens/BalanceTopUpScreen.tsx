@@ -5,6 +5,7 @@ import {
   View,
   StyleSheet,
   ActivityIndicator,
+  TouchableOpacity,
 } from 'react-native';
 import { appStyles } from '../../styles/appStyles';
 import BottomBar from '../../components/BottomBar';
@@ -22,9 +23,8 @@ const BalanceTopUpScreen: React.FC<BalanceTopUpScreenProps> = ({
 }) => {
   const [pln, setPln] = useState('0');
   const [usd, setUsd] = useState('0');
-
   const [rate, setRate] = useState<number | null>(null);
-  // 1. Fetching the Binance exchange rate for USDT to PLN
+
   useEffect(() => {
     const fetchRate = async () => {
       try {
@@ -42,13 +42,11 @@ const BalanceTopUpScreen: React.FC<BalanceTopUpScreenProps> = ({
     };
     fetchRate();
   }, []);
-  // 2. Processing of POLISH ZLOTY (PLN) input
+
   const handlePlnChange = (text: string) => {
     let formattedText = text.replace(',', '.');
     if (formattedText.startsWith('.')) formattedText = '0' + formattedText;
-
     setPln(formattedText);
-
     if (rate && formattedText !== '') {
       const val = parseFloat(formattedText);
       if (!isNaN(val)) {
@@ -62,13 +60,10 @@ const BalanceTopUpScreen: React.FC<BalanceTopUpScreenProps> = ({
     }
   };
 
-  // 3. Processing of DOLLARS (USD) input
   const handleUsdChange = (text: string) => {
     let formattedText = text.replace(',', '.');
     if (formattedText.startsWith('.')) formattedText = '0' + formattedText;
-
     setUsd(formattedText);
-
     if (rate && formattedText !== '') {
       const val = parseFloat(formattedText);
       if (!isNaN(val)) {
@@ -90,44 +85,55 @@ const BalanceTopUpScreen: React.FC<BalanceTopUpScreenProps> = ({
           onPress={() => navigation.goBack()}
         />
 
-        <View style={styles.marginInput}>
-          <View style={styles.inputRow}>
-            <TextInput
-              style={styles.inputTextMain}
-              value={pln}
-              onChangeText={handlePlnChange}
-              keyboardType="decimal-pad"
-              placeholder="0"
-              placeholderTextColor="#555"
-            />
-            <View style={styles.currencyBadge}>
-              <Text style={styles.currencyText}>PLN</Text>
-            </View>
-          </View>
-
-          <View style={styles.inputRow}>
-            {rate ? (
+        {/* 1. Обертка для контента (инпуты + кнопка) */}
+        <View style={localStyles.contentCenter}>
+          
+          {/* Блок с инпутами */}
+          <View style={localStyles.inputsContainer}>
+            <View style={localStyles.inputRow}>
               <TextInput
-                style={styles.inputTextSecondary}
+                style={localStyles.inputTextMain}
                 value={usd}
                 onChangeText={handleUsdChange}
                 keyboardType="decimal-pad"
                 placeholder="0"
                 placeholderTextColor="#555"
               />
-            ) : (
-              <ActivityIndicator
-                size="small"
-                color="#666"
-                style={styles.marginIndicator}
-              />
-            )}
-            <View style={[styles.currencyBadge, styles.currencyBadgeSecondary]}>
-              <Text style={styles.currencyTextSecondary}>USD</Text>
+              <View style={localStyles.currencyBadge}>
+                <Text style={localStyles.currencyText}>USD</Text>
+              </View>
+            </View>
+
+            <View style={localStyles.inputRow}>
+              {rate ? (
+                <TextInput
+                  style={localStyles.inputTextSecondary}
+                  value={pln}
+                  onChangeText={handlePlnChange}
+                  keyboardType="decimal-pad"
+                  placeholder="0"
+                  placeholderTextColor="#555"
+                />
+              ) : (
+                <ActivityIndicator
+                  size="small"
+                  color="#666"
+                  style={localStyles.marginIndicator}
+                />
+              )}
+              <View style={[localStyles.currencyBadge, localStyles.currencyBadgeSecondary]}>
+                <Text style={localStyles.currencyTextSecondary}>PLN</Text>
+              </View>
             </View>
           </View>
+
+          <TouchableOpacity style={appStyles.topUpContinueButton}>
+            <Text style={localStyles.continueText}> Continue </Text>
+          </TouchableOpacity>
+          
         </View>
       </View>
+      
       <BottomBar
         homePress={() => {
           navigation.navigate('Main');
@@ -139,12 +145,19 @@ const BalanceTopUpScreen: React.FC<BalanceTopUpScreenProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const localStyles = StyleSheet.create({
+  contentCenter: {
+    flex: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center',
+  },
+  inputsContainer: {
+    marginTop: 150
+  },
   inputRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 10,
+    alignItems: 'center', 
   },
   inputTextMain: {
     fontSize: 64,
@@ -185,11 +198,13 @@ const styles = StyleSheet.create({
     color: '#AAAAAA',
     fontWeight: '700',
   },
-  marginInput: {
-    marginTop: 50
-  },
   marginIndicator: {
-    marginRight: 10
+    marginRight: 10,
+  },
+  continueText: {
+    fontSize: 20,
+    fontFamily: 'Poppins-Bold',
+    color: '#FFFFFF',
   }
 });
 

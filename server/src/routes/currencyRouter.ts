@@ -3,6 +3,6 @@ import currencyController from '../controllers/currencyController';
 
 const router = Router();
 
-router.get('/popular', currencyController.getPopularCurrencies);
+router.get('/list', currencyController.getTopCryptos);
 
 export default router;
