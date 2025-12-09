@@ -24,3 +24,13 @@ export const currencyAPI = {
         return response.data;
     }
 };
+export const walletAPI = {
+    async topUp(userId: number, amount: number) {
+        const response = await $api.post('/wallet/top-up', { userId, amount });
+        return response.data;
+    },
+    async getPortfolio(userId: number) {
+        const response = await $api.get(`/wallet/${userId}`);
+        return response.data;
+    }
+}

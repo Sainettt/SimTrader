@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import authRouter from './routes/authRouter';
 import currencyRouter from './routes/currencyRouter';
+import walletRouter from './routes/walletRouter';
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ app.use((req, res, next) => {
 
 app.use('/api/auth', authRouter);
 app.use('/api/currency', currencyRouter);
+app.use('/api/wallet', walletRouter);
 
 const start = async () => {
     try {
