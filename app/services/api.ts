@@ -30,6 +30,12 @@ export const currencyAPI = {
             params: { symbol, period }
         });
         return response.data; // returns { data: [...], changePercent, changeValue }
+    },
+    async getLatestPrice(symbol: string) {
+        const response = await $api.get('/currency/rate', {
+            params: { symbol: symbol.includes('USDT') ? symbol : `${symbol}USDT` } 
+        });
+        return response.data; // { symbol: "...", price: "..." }
     }
 };
 export const walletAPI = {
@@ -42,4 +48,15 @@ export const walletAPI = {
         return response.data;
     }
 }
+export const tradeAPI = {
+    async buy(userId: number, currency: string, amount: number, currentPrice: number) {
+        const response = await $api.post('/trade/buy', { userId, currency, amount, currentPrice });
+        return response.data;
+    },
+
+    async sell(userId: number, currency: string, amount: number, currentPrice: number) {
+        const response = await $api.post('/trade/sell', { userId, currency, amount, currentPrice });
+        return response.data;
+    }
+};
 

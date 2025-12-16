@@ -28,7 +28,8 @@ class CurrencyController {
                     !ticker.symbol.includes('DUSD') &&
                     ticker.symbol !== 'USDCUSDT' && 
                     ticker.symbol !== 'BUSDUSDT' &&
-                    ticker.symbol !== 'DAIUSDT'
+                    ticker.symbol !== 'DAIUSDT' &&
+                    ticker.symbol !== 'USD1USDT'
                 )
                 .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
                 .map((ticker: any) => ({
@@ -111,6 +112,22 @@ class CurrencyController {
         } catch (e) {
             console.error('History Error:', e);
             return res.status(500).json({ message: 'Error fetching history' });
+        }
+    }
+    async getRate(req: Request, res: Response): Promise<any> {
+        try {
+            const { symbol } = req.query; // Ожидаем, например, "BTCUSDT"
+            
+            // Запрос к Binance: /api/v3/ticker/price?symbol=BTCUSDT
+            const response = await binanceApi.get('/ticker/price', {
+                params: { symbol }
+            });
+
+            // Binance возвращает: { symbol: "BTCUSDT", price: "65000.00" }
+            return res.json(response.data);
+        } catch (e) {
+            console.error('Error fetching rate:', e);
+            return res.status(500).json({ message: 'Error fetching price' });
         }
     }
 }

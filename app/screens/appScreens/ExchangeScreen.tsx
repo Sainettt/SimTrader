@@ -1,10 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import {
-  Text,
-  View,
-  StyleSheet,
-  Dimensions,
-} from 'react-native';
+import React, { useState, useEffect, useRef, useCallback, useContext } from 'react';
+import { View, Text, StyleSheet, Dimensions, Alert } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { AppStackParamList } from '../../src/navigation/appTypes';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -12,223 +7,237 @@ import UpperTextScreen from '../../components/UpperTextScreen';
 import BottomBar from '../../components/BottomBar';
 import { appStyles } from '../../styles/appStyles';
 import { TradePanel } from '../../components/TradePanel';
-import { currencyAPI } from '../../services/api';
+import { currencyAPI, tradeAPI, walletAPI } from '../../services/api';
 import { CryptoChart } from '../../components/CryptoChart';
 import { IntervalSelector } from '../../components/IntervalSelector';
+import { AuthContext } from '../../context/AuthContext';
 
-type ExchangeScreenProps = NativeStackScreenProps<
-  AppStackParamList,
-  'Exchange'
->;
+type ExchangeScreenProps = NativeStackScreenProps<AppStackParamList, 'Exchange'>;
 
 const screenWidth = Dimensions.get('window').width;
 
-const ExchangeScreen: React.FC<ExchangeScreenProps> = ({
-  navigation,
-  route,
-}) => {
-  const {
-    coinId,
-    symbol,
-    currentPrice: initialPrice,
-    ownedAmount,
-  } = route.params;
+const ExchangeScreen: React.FC<ExchangeScreenProps> = ({ navigation, route }) => {
+    const { userId } = useContext(AuthContext);
 
-  const [selectedInterval, setSelectedInterval] = useState('1D');
-  const intervals = ['1H', '1D', '1W', '1M', '1Y'];
+    const { coinId, symbol, currentPrice: initialPrice, ownedAmount: initialOwnedAmount } = route.params;
 
-  const [chartData, setChartData] = useState<any[]>([]);
-  const [currentPrice, setCurrentPrice] = useState(initialPrice);
-  const [priceChangePercent, setPriceChangePercent] = useState(
-    route.params.priceChange,
-  );
-  const [priceChangeValue, setPriceChangeValue] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+    const [selectedInterval, setSelectedInterval] = useState('1D');
+    const intervals = ['1H', '1D', '1W', '1M', '1Y'];
 
-  const isLoaded = useRef(false);
+    const [chartData, setChartData] = useState<any[]>([]);
+    const [currentPrice, setCurrentPrice] = useState(initialPrice);
+    const [priceChangePercent, setPriceChangePercent] = useState(route.params.priceChange);
+    const [priceChangeValue, setPriceChangeValue] = useState('');
+    const [isLoadingData, setIsLoadingData] = useState(false);
+    
+    const [ownedAmount, setOwnedAmount] = useState(initialOwnedAmount);
+    const [walletUsdBalance, setWalletUsdBalance] = useState<string>('Loading...');
+    
+    const [isTrading, setIsTrading] = useState(false);
 
-  useEffect(() => {
-    isLoaded.current = false;
-  }, [selectedInterval]);
+    const isLoaded = useRef(false);
 
-  useFocusEffect(
-    useCallback(() => {
-      let isActive = true;
+    useEffect(() => {
+        isLoaded.current = false;
+    }, [selectedInterval]);
 
-      const fetchHistory = async () => {
-
-        if (!isLoaded.current) setIsLoading(true);
+    const fetchBalances = useCallback(async () => {
+        if (!userId) return;
         try {
-          const response = await currencyAPI.getHistory(
-            coinId,
-            selectedInterval,
-          );
+            const portfolio = await walletAPI.getPortfolio(userId);
+            
+            const asset = portfolio.assets.find((a: any) => a.currency === symbol);
+            setOwnedAmount(asset ? asset.balance : 0);
 
-          if (isActive) {
-            setChartData(response.data);
-            setPriceChangePercent(response.changePercent);
-            setPriceChangeValue(response.changeValue);
+            const usdAsset = portfolio.assets.find((a: any) => a.currency === 'USD');
+            const usdBalance = usdAsset ? usdAsset.balance : 0;
 
-            if (response.data.length > 0) {
-              setCurrentPrice(
-                response.data[response.data.length - 1].value.toFixed(2),
-              );
-            }
-            isLoaded.current = true;
-          }
+            setWalletUsdBalance(usdBalance.toFixed(2));
+
         } catch (e) {
-          console.log('Error fetching history', e);
-        } finally {
-          if (isActive) setIsLoading(false);
+            console.log('Error updating balance', e);
         }
-      };
-      fetchHistory();
-      const intervalId = setInterval(fetchHistory, 5000);
+    }, [userId, symbol]);
 
-      return () => {
-        isActive = false;
-        clearInterval(intervalId);
-      };
-    }, [selectedInterval, coinId]),
-  );
+    useFocusEffect(
+        useCallback(() => {
+            let isActive = true;
 
-  const isPositive = parseFloat(priceChangePercent) >= 0;
-  const balanceInUsd = (Number(ownedAmount) * Number(currentPrice)).toFixed(2);
+            const fetchHistory = async () => {
+                if (!isLoaded.current) setIsLoadingData(true);
+                try {
+                    const response = await currencyAPI.getHistory(coinId, selectedInterval);
 
-  return (
-    <View style={appStyles.flexContainer}>
-      <View style={appStyles.containerWithoutPadding}>
-        <UpperTextScreen
-          title={`${symbol} Exchange`}
-          onPress={() => navigation.goBack()}
-        />
+                    if (isActive) {
+                        setChartData(response.data);
+                        setPriceChangePercent(response.changePercent);
+                        setPriceChangeValue(response.changeValue);
 
-        <View style={{ flex: 1, justifyContent: 'space-between' }}>
-          <View>
-            {/* Цена */}
-            <View style={styles.priceContainer}>
-              <Text style={styles.totalLabel}>Current Price</Text>
-              <Text style={styles.bigPrice}>${currentPrice}</Text>
+                        if (response.data.length > 0) {
+                            setCurrentPrice(response.data[response.data.length - 1].value.toFixed(2));
+                        }
+                        isLoaded.current = true;
+                    }
+                } catch (e) {
+                    console.log('Error fetching history', e);
+                } finally {
+                    if (isActive) setIsLoadingData(false);
+                }
+            };
+            
+            fetchHistory();
+            fetchBalances();
 
-              <View style={{ flexDirection: 'row' }}>
-                <Text
-                  style={[
-                    styles.changeText,
-                    { color: isPositive ? '#83EDA6' : '#EB5B5B' },
-                  ]}
-                >
-                  {priceChangeValue}$ ({isPositive ? '+' : ''}
-                  {priceChangePercent}%)
-                </Text>
-                <Text style={styles.intervalLabel}> • {selectedInterval}</Text>
-              </View>
+            const intervalId = setInterval(fetchHistory, 5000);
+
+            return () => {
+                isActive = false;
+                clearInterval(intervalId);
+            };
+        }, [selectedInterval, coinId, fetchBalances]),
+    );
+
+    const handleTrade = async (type: 'buy' | 'sell', amount: number) => {
+        if(!userId) return;
+        setIsTrading(true);
+        try {
+            if (type === 'buy') {
+                await tradeAPI.buy(userId, symbol, amount, Number(currentPrice));
+                Alert.alert('Success', `Successfully bought ${amount.toFixed(6)} ${symbol}`);
+            } else {
+                await tradeAPI.sell(userId, symbol, amount, Number(currentPrice));
+                Alert.alert('Success', `Successfully sold ${amount.toFixed(6)} ${symbol}`);
+            }
+            
+            await fetchBalances();
+
+        } catch (e: any) {
+            const errorMsg = e.response?.data?.message || 'Transaction failed';
+            Alert.alert('Error', errorMsg);
+        } finally {
+            setIsTrading(false);
+        }
+    };
+
+    const isPositive = parseFloat(priceChangePercent) >= 0;
+    const balanceInUsd = (Number(ownedAmount) * Number(currentPrice)).toFixed(2);
+
+    return (
+        <View style={appStyles.flexContainer}>
+            <View style={appStyles.containerWithoutPadding}>
+                <UpperTextScreen
+                    title={`${symbol} Exchange`}
+                    onPress={() => navigation.goBack()}
+                />
+
+                <View style={{ flex: 1, justifyContent: 'space-between' }}>
+                    <View>
+                        {/* Price */}
+                        <View style={styles.priceContainer}>
+                            <Text style={styles.totalLabel}>Current Price</Text>
+                            <Text style={styles.bigPrice}>${currentPrice}</Text>
+
+                            <View style={{ flexDirection: 'row' }}>
+                                <Text style={[styles.changeText, { color: isPositive ? '#83EDA6' : '#EB5B5B' }]}>
+                                    {priceChangeValue}$ ({isPositive ? '+' : ''}{priceChangePercent}%)
+                                </Text>
+                                <Text style={styles.intervalLabel}> • {selectedInterval}</Text>
+                            </View>
+                        </View>
+
+                        {/* Balances */}
+                        <View style={styles.balanceContainerWrapper}>
+                            <Text style={styles.balanceInfoText}>
+                                Your {symbol}: <Text style={styles.whiteBold}>{Number(ownedAmount).toFixed(6)}</Text>
+                                <Text style={styles.greyText}> (${balanceInUsd})</Text>
+                            </Text>
+                            
+                            <Text style={styles.balanceInfoText}>
+                                Available USD: <Text style={styles.greenBold}>${walletUsdBalance}</Text>
+                            </Text>
+                        </View>
+
+                        <CryptoChart
+                            data={chartData}
+                            loading={isLoadingData}
+                            isPositive={isPositive}
+                            width={screenWidth}
+                        />
+
+                        <IntervalSelector
+                            intervals={intervals}
+                            selectedInterval={selectedInterval}
+                            onSelect={setSelectedInterval}
+                        />
+                    </View>
+
+                    <TradePanel 
+                        symbol={symbol}
+                        currentPrice={Number(currentPrice)}
+                        onConfirmTrade={handleTrade}
+                        isLoading={isTrading}
+                    />
+                </View>
             </View>
 
-            {/* Баланс */}
-            <View style={styles.balanceInfoContainer}>
-              <Text style={styles.balanceInfoText}>
-                Your Balance:{' '}
-                <Text style={{ color: '#fff', fontWeight: 'bold' }}>
-                  ${balanceInUsd}
-                </Text>
-              </Text>
-            </View>
-
-            {/* График */}
-            <CryptoChart
-              data={chartData}
-              loading={isLoading}
-              isPositive={isPositive}
-              width={screenWidth}
+            <BottomBar
+                homePress={() => navigation.navigate('Main')}
+                walletPress={() => navigation.navigate('Wallet')}
+                transactionPress={() => {}}
             />
-
-            {/* Интервалы */}
-            <IntervalSelector
-              intervals={intervals}
-              selectedInterval={selectedInterval}
-              onSelect={setSelectedInterval}
-            />
-          </View>
-
-          <TradePanel />
         </View>
-      </View>
-
-      <BottomBar
-        homePress={() => navigation.navigate('Main')}
-        walletPress={() => {}}
-        transactionPress={() => {}}
-      />
-    </View>
-  );
+    );
 };
 
 const styles = StyleSheet.create({
-  priceContainer: {
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  totalLabel: {
-    color: '#AAAAAA',
-    fontSize: 16,
-    fontFamily: 'Poppins-Regular',
-  },
-  bigPrice: {
-    color: '#FFFFFF',
-    fontSize: 36,
-    fontFamily: 'Poppins-Bold',
-    marginVertical: 5,
-  },
-  changeText: {
-    fontSize: 16,
-    fontFamily: 'Poppins-Medium',
-  },
-  intervalLabel: {
-    color: '#777',
-    fontSize: 16,
-    fontFamily: 'Poppins-Regular',
-  },
-  balanceInfoContainer: {
-    alignItems: 'center',
-    marginBottom: 5,
-    marginTop: 5,
-  },
-  balanceInfoText: {
-    color: '#AAAAAA',
-    fontSize: 14,
-    fontFamily: 'Poppins-Regular',
-  },
-  chartContainer: {
-    height: 220,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  intervalsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingHorizontal: 20,
-    marginBottom: 10,
-    marginTop: 10,
-  },
-  intervalButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 10,
-    backgroundColor: 'transparent',
-  },
-  activeIntervalButton: {
-    backgroundColor: '#3C3C3C',
-  },
-  intervalText: {
-    color: '#777',
-    fontFamily: 'Poppins-Bold',
-    fontSize: 14,
-  },
-  activeIntervalText: {
-    color: '#FFFFFF',
-  },
+    priceContainer: { 
+        alignItems: 'center', 
+        marginTop: 5,
+    },
+    totalLabel: { 
+        color: '#AAAAAA', 
+        fontSize: 14, 
+        fontFamily: 'Poppins-Regular' 
+    },
+    bigPrice: { 
+        color: '#FFFFFF', 
+        fontSize: 32,
+        fontFamily: 'Poppins-Bold', 
+        marginVertical: 2,
+    },
+    changeText: { 
+        fontSize: 14,
+        fontFamily: 'Poppins-Medium' 
+    },
+    intervalLabel: { 
+        color: '#777', 
+        fontSize: 14,
+        fontFamily: 'Poppins-Regular' 
+    },
+    
+
+    balanceContainerWrapper: {
+        alignItems: 'center',
+        marginVertical: 5, 
+        gap: 0 
+    },
+    balanceInfoText: { 
+        color: '#AAAAAA', 
+        fontSize: 12,
+        fontFamily: 'Poppins-Regular' 
+    },
+    whiteBold: {
+        color: '#FFFFFF',
+        fontWeight: 'bold'
+    },
+    greenBold: {
+        color: '#83EDA6',
+        fontWeight: 'bold'
+    },
+    greyText: {
+        color: '#777',
+        fontSize: 12
+    }
 });
 
 export default ExchangeScreen;
