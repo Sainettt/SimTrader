@@ -153,6 +153,29 @@ class WalletController {
             return res.status(500).json({ message: 'Error' });
         }
     }
+    async getTransactions(req: Request, res: Response): Promise<any> {
+        try {
+            const userId = parseInt(req.params.userId);
+
+            const wallet = await prisma.wallet.findUnique({
+                where: { userId },
+            });
+
+            if (!wallet) {
+                return res.status(404).json({ message: 'Wallet not found' });
+            }
+
+            const transactions = await prisma.transaction.findMany({
+                where: { walletId: wallet.id },
+                orderBy: { createdAt: 'desc' }
+            });
+
+            return res.json(transactions);
+        } catch (e) {
+            console.error('Error fetching transactions:', e);
+            return res.status(500).json({ message: 'Error fetching transactions' });
+        }
+    }
 }
 
 export default new WalletController();

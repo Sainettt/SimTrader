@@ -186,7 +186,7 @@ const BalanceTopUpScreen: React.FC<BalanceTopUpScreenProps> = ({
           navigation.navigate('Main');
         }}
         walletPress={() => {navigation.navigate('Wallet')}}
-        transactionPress={() => {}}
+        transactionPress={() => {navigation.navigate('TransactionHistory')}}
       />
 
       <Modal

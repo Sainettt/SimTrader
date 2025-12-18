@@ -87,6 +87,10 @@ export const walletAPI = {
     async getPortfolio(userId: number) {
         const response = await $api.get(`/wallet/${userId}`);
         return response.data;
+    },
+    async getTransactions(userId: number) {
+        const response = await $api.get(`/wallet/${userId}/transactions`);
+        return response.data;
     }
 }
 
@@ -99,5 +103,5 @@ export const tradeAPI = {
     async sell(userId: number, currency: string, amount: number, currentPrice: number) {
         const response = await $api.post('/trade/sell', { userId, currency, amount, currentPrice });
         return response.data;
-    }
+    },
 };

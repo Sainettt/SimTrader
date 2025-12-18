@@ -97,7 +97,7 @@ const AllCurrenciesScreen: React.FC<AllCurrenciesProps> = ({ navigation }) => {
       <BottomBar
         homePress={() => navigation.navigate('Main')}
         walletPress={() => {navigation.navigate('Wallet')}}
-        transactionPress={() => {}}
+        transactionPress={() => {navigation.navigate('TransactionHistory')}}
       />
     </View>
   );
