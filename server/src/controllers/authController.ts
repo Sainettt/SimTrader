@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import prisma from '../prisma';
-
+import { isValidEmail, isValidPassword } from '../utils/validation'
 
 const generateFakeCardNumber = () => {
     const part1 = Math.floor(1000 + Math.random() * 9000);
@@ -36,12 +36,21 @@ class AuthController {
         try {
             const { userName, email, password } = req.body;
 
+            if (!isValidEmail(email)) {
+                return res.status(400).json({ message: 'Invalid email format' });
+            }
+            if (!isValidPassword(password)) {
+                return res.status(400).json({ 
+                    message: 'Password must be at least 6 chars, contain 1 uppercase & 1 special char' 
+                });
+            }
+
             if (!email || !password || !userName) {
                 return res.status(400).json({ message: 'Email, password and userName are required' });
             }
 
-            const candidate = await prisma.user.findUnique({ where: { email } });
-            if (candidate) {
+            const existingUser = await prisma.user.findUnique({where: { email }})
+            if (existingUser) {
                 return res.status(400).json({ message: 'User with this email already exists' });
             }
 
@@ -93,6 +102,10 @@ class AuthController {
     async login(req: Request, res: Response): Promise<any> {
         try {
             const { email, password } = req.body;
+
+            // if (!isValidEmail(email)) {
+            //      return res.status(400).json({ message: 'Invalid email format' });
+            // }
 
             const user = await prisma.user.findUnique({
                 where: { email },

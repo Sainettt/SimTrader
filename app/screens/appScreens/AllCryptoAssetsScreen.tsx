@@ -16,8 +16,10 @@ type AllCurrenciesProps = NativeStackScreenProps<
   'AllCryptoAssets'
 >;
 
-const AllCryptoAssetsScreen: React.FC<AllCurrenciesProps> = ({ navigation }) => {
-  const {userId} = useContext(AuthContext);
+const AllCryptoAssetsScreen: React.FC<AllCurrenciesProps> = ({
+  navigation,
+}) => {
+  const { userId } = useContext(AuthContext);
   const [allCryptoAssets, setAllCryptoAssets] = useState<Currency[]>([]);
   const [portfolioAssets, setPortfolioAssets] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -32,14 +34,18 @@ const AllCryptoAssetsScreen: React.FC<AllCurrenciesProps> = ({ navigation }) => 
         }
         try {
           const cryptoData = await currencyAPI.getTopCryptos(100);
-          const portfolioData = userId ? await walletAPI.getPortfolio(userId) : null;
-          setAllCryptoAssets(cryptoData);
-          setPortfolioAssets(portfolioData ? portfolioData.assets : []);
-          isLoaded.current = true;
+          const portfolioData = userId
+            ? await walletAPI.getPortfolio(userId)
+            : null;
+          if (isActive) {
+            setAllCryptoAssets(cryptoData);
+            setPortfolioAssets(portfolioData ? portfolioData.assets : []);
+            isLoaded.current = true;
+          }
         } catch (e) {
           console.log(e);
         } finally {
-          setLoading(false);
+          if (isActive) setLoading(false);
         }
       };
       fetchAllCurrencies();
@@ -53,19 +59,18 @@ const AllCryptoAssetsScreen: React.FC<AllCurrenciesProps> = ({ navigation }) => 
     }, [userId]),
   );
   const handleCurrencyPress = (item: any) => {
+    const asset = portfolioAssets.find((a: any) => a.symbol === item.name);
+    const ownedAmount = asset ? asset.amount : 0;
 
-      const asset = portfolioAssets.find((a: any) => a.symbol === item.name);
-      const ownedAmount = asset ? asset.amount : 0;
-      
-      const params = {
-          coinId: item.id,       
-          symbol: item.name,     
-          name: item.name,       
-          currentPrice: item.price,
-          priceChange: item.change,
-          ownedAmount: ownedAmount
+    const params = {
+      coinId: item.id,
+      symbol: item.name,
+      name: item.name,
+      currentPrice: item.price,
+      priceChange: item.change,
+      ownedAmount: ownedAmount,
     };
-      navigation.navigate('Exchange', params);
+    navigation.navigate('Exchange', params);
   };
 
   return (
@@ -82,7 +87,9 @@ const AllCryptoAssetsScreen: React.FC<AllCurrenciesProps> = ({ navigation }) => 
         ) : (
           <FlatList
             data={allCryptoAssets}
-            renderItem={({ item }) => <CurrencyItem item={item} onPressItem={handleCurrencyPress} />}
+            renderItem={({ item }) => (
+              <CurrencyItem item={item} onPressItem={handleCurrencyPress} />
+            )}
             keyExtractor={item => item.id}
             showsVerticalScrollIndicator={false}
             initialNumToRender={20}
@@ -96,8 +103,12 @@ const AllCryptoAssetsScreen: React.FC<AllCurrenciesProps> = ({ navigation }) => 
       </View>
       <BottomBar
         homePress={() => navigation.navigate('Main')}
-        walletPress={() => {navigation.navigate('Wallet')}}
-        transactionPress={() => {navigation.navigate('TransactionHistory')}}
+        walletPress={() => {
+          navigation.navigate('Wallet');
+        }}
+        transactionPress={() => {
+          navigation.navigate('TransactionHistory');
+        }}
       />
     </View>
   );

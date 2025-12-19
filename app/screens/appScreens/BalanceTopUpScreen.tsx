@@ -32,7 +32,7 @@ const BalanceTopUpScreen: React.FC<BalanceTopUpScreenProps> = ({
   const [rate, setRate] = useState<number | null>(null);
   
   const [modalVisible, setModalVisible] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [_isProcessing, setIsProcessing] = useState(false);
 
   useFocusEffect(
     useCallback(() => {

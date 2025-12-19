@@ -31,16 +31,16 @@ const RegisterScreen: React.FC<Props> = ({ navigation }: Props) => {
       Alert.alert('Error', 'Please enter an email');
       return;
     }
-    // if (!isValidEmail(email)) {
-    //   Alert.alert('Error', 'Please enter a valid email address');
-    //   return;
-    // }
-    // if (!isValidPassword(password)) {
-    //   Alert.alert('Error', 'Password must be at least 6 characters long, contain at least one uppercase letter and one special character');
-    //   return;
-    // }
+    if (!isValidEmail(email)) {
+      Alert.alert('Error', 'Please enter a valid email address');
+      return;
+    }
+    if (!isValidPassword(password)) {
+      Alert.alert('Error', 'Password must be at least 6 characters long, contain at least one uppercase letter and one special character');
+      return;
+    }
 
-     register(username, email, password);
+    register(username, email, password);
   };
 
   return (
