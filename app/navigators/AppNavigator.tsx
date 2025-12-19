@@ -1,6 +1,6 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import AllCurrenciesScreen from '../screens/appScreens/AllCurrenciesScreen';
+import AllCryptoAssetsScreen from '../screens/appScreens/AllCryptoAssetsScreen';
 import BalanceTopUpScreen from '../screens/appScreens/BalanceTopUpScreen';
 import ExchangeScreen from '../screens/appScreens/ExchangeScreen';
 import MainScreen from '../screens/appScreens/MainScreen';
@@ -16,7 +16,7 @@ const AppNavigator: React.FC = () => {
   return (
     <Stack.Navigator initialRouteName="Main" screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Main" component={MainScreen} />
-      <Stack.Screen name="AllCurrencies" component={AllCurrenciesScreen} />
+      <Stack.Screen name="AllCryptoAssets" component={AllCryptoAssetsScreen} />
       <Stack.Screen name="BalanceTopUp" component={BalanceTopUpScreen} />
       <Stack.Screen name="Exchange" component={ExchangeScreen} />
       <Stack.Screen name="PaymentMethod" component={PaymentMethodScreen} />

@@ -155,7 +155,7 @@ const ExchangeScreen: React.FC<ExchangeScreenProps> = ({
     <View style={appStyles.flexContainer}>
       <View style={appStyles.containerWithoutPadding}>
         <UpperText
-          title={`${symbol} Exchange`}
+          title={`${symbol}`}
           onPress={() => navigation.goBack()}
         />
 

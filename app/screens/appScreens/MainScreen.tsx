@@ -14,7 +14,7 @@ type MainProps = NativeStackScreenProps<AppStackParamList, 'Main'>;
 const MainScreen: React.FC<MainProps> = ({ navigation }: MainProps) => {
   const {userId} = useContext(AuthContext);
   const [totalBalance, setTotalBalance] = useState('0.00');
-  const [currencies, setCurrencies] = useState([]);
+  const [cryptoAssets, setCryptoAssets] = useState([]);
   const [portfolioAssets, setPortfolioAssets] = useState<any[]>([]);
   const [portfolioStats, setPortfolioStats] = useState({
       val: '0.00',
@@ -38,7 +38,7 @@ const MainScreen: React.FC<MainProps> = ({ navigation }: MainProps) => {
              walletAPI.getPortfolio(userId)
           ]);
           if (isActive){
-            setCurrencies(cryptoData);
+            setCryptoAssets(cryptoData);
             setTotalBalance(portfolioData.totalBalanceUsd);
             setPortfolioAssets(portfolioData.assets);
             setPortfolioStats({
@@ -95,12 +95,12 @@ const MainScreen: React.FC<MainProps> = ({ navigation }: MainProps) => {
           changePercent={portfolioStats.pct}
           loading={loading}
         />
-        <InfoTrendCurrencies data={currencies} onPressItem={handleCurrencyPress} />
+        <InfoTrendCurrencies data={cryptoAssets} onPressItem={handleCurrencyPress} />
         <View style={appStyles.viewAllContainer}>
           <TouchableOpacity
             style={appStyles.viewAllButton}
             onPress={() => {
-              navigation.navigate('AllCurrencies');
+              navigation.navigate('AllCryptoAssets');
             }}
           >
             <Text style={appStyles.viewAllText}>View All</Text>

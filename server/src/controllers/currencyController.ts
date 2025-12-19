@@ -1,59 +1,18 @@
 import { Request, Response } from 'express';
 import binanceApi from './services/binanceApi';
-
-let cryptoCache: any[] = [];
-let lastFetchTime: number = 0;
-const CACHE_DURATION = 10 * 1000; //
+import { getTopCoinsFromCache } from './services/priceCache';
 
 class CurrencyController {
     async getTopCryptos(req: Request, res: Response): Promise<any> {
         try {
-            const limit = parseInt(req.query.limit as string) || 100;
-            const now = Date.now();
+            
+            const limit = parseInt(req.query.limit as string) || 10;
+            const coins = getTopCoinsFromCache(limit);
 
-            if (cryptoCache.length > 0 && (now - lastFetchTime < CACHE_DURATION)) {
-                return res.json(cryptoCache.slice(0, limit));
-            }
-
-            const response = await binanceApi.get('/ticker/24hr');
-            const allTickers = response.data;
-
-            const topCryptos = allTickers
-                .filter((ticker: any) => ticker.symbol.endsWith('USDT'))
-                .filter((ticker: any) => 
-                    !ticker.symbol.includes('UPUSDT') && 
-                    !ticker.symbol.includes('DOWNUSDT') &&
-                    !ticker.symbol.includes('BEAR') &&
-                    !ticker.symbol.includes('BULL') &&
-                    !ticker.symbol.includes('DUSD') &&
-                    ticker.symbol !== 'USDCUSDT' && 
-                    ticker.symbol !== 'BUSDUSDT' &&
-                    ticker.symbol !== 'DAIUSDT' &&
-                    ticker.symbol !== 'USD1USDT'
-                )
-                .sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
-                .map((ticker: any) => ({
-                    id: ticker.symbol,
-                    name: ticker.symbol.replace('USDT', ''),
-                    symbol: ticker.symbol,
-                    price: parseFloat(ticker.lastPrice).toFixed(2),
-                    change: parseFloat(ticker.priceChangePercent).toFixed(2),
-                    high: parseFloat(ticker.highPrice).toFixed(2),
-                    low: parseFloat(ticker.lowPrice).toFixed(2),
-                    volume: parseFloat(ticker.quoteVolume).toFixed(0),
-                }));
-
-                cryptoCache = topCryptos; 
-                lastFetchTime = now;
-
-            return res.json(topCryptos.slice(0, limit));
-
+            return res.json(coins);
         } catch (e) {
-            console.error('Binance API Error:', e);
-            if (cryptoCache.length > 0) {
-                return res.json(cryptoCache.slice(0, parseInt(req.query.limit as string) || 100));
-            }
-            return res.status(500).json({ message: 'Error fetching crypto data' });
+            console.error(e);
+            return res.status(500).json({ message: 'Error fetching cryptocurrencies' });
         }
     }
     async getHistory(req: Request, res: Response): Promise<any> {
@@ -62,7 +21,9 @@ class CurrencyController {
             // period: '1H', '1D', '1W', '1M', '1Y'
 
             if (!symbol) return res.status(400).json({ message: 'Symbol required' });
-
+            const pair = (symbol as string).toUpperCase().endsWith('USDT') 
+                ? symbol 
+                : `${symbol}USDT`;
             // 1. Mapping our period to Binance interval and limit
             // interval: таймфрейм свечи
             // limit: сколько точек взять
@@ -81,7 +42,7 @@ class CurrencyController {
             // 2. Requesting data from Binance
             const response = await binanceApi.get('/klines', {
                 params: {
-                    symbol: symbol,
+                    symbol: pair,
                     interval: interval,
                     limit: limit
                 }

@@ -13,12 +13,12 @@ import { walletAPI } from '../../services/api';
 import { Currency } from '../../src/types/types';
 type AllCurrenciesProps = NativeStackScreenProps<
   AppStackParamList,
-  'AllCurrencies'
+  'AllCryptoAssets'
 >;
 
-const AllCurrenciesScreen: React.FC<AllCurrenciesProps> = ({ navigation }) => {
+const AllCryptoAssetsScreen: React.FC<AllCurrenciesProps> = ({ navigation }) => {
   const {userId} = useContext(AuthContext);
-  const [allCurrencies, setAllCurrencies] = useState<Currency[]>([]);
+  const [allCryptoAssets, setAllCryptoAssets] = useState<Currency[]>([]);
   const [portfolioAssets, setPortfolioAssets] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const isLoaded = useRef(false);
@@ -33,7 +33,7 @@ const AllCurrenciesScreen: React.FC<AllCurrenciesProps> = ({ navigation }) => {
         try {
           const cryptoData = await currencyAPI.getTopCryptos(100);
           const portfolioData = userId ? await walletAPI.getPortfolio(userId) : null;
-          setAllCurrencies(cryptoData);
+          setAllCryptoAssets(cryptoData);
           setPortfolioAssets(portfolioData ? portfolioData.assets : []);
           isLoaded.current = true;
         } catch (e) {
@@ -72,16 +72,16 @@ const AllCurrenciesScreen: React.FC<AllCurrenciesProps> = ({ navigation }) => {
     <View style={appStyles.flexContainer}>
       <View style={appStyles.containerWithoutPadding}>
         <UpperText
-          title="All Currencies"
+          title="All Crypto Assets"
           onPress={() => navigation.goBack()}
         />
-        {loading && allCurrencies.length === 0 ? (
+        {loading && allCryptoAssets.length === 0 ? (
           <View style={appStyles.indicatorStyle}>
             <ActivityIndicator size="large" color="#83EDA6" />
           </View>
         ) : (
           <FlatList
-            data={allCurrencies}
+            data={allCryptoAssets}
             renderItem={({ item }) => <CurrencyItem item={item} onPressItem={handleCurrencyPress} />}
             keyExtractor={item => item.id}
             showsVerticalScrollIndicator={false}
@@ -102,4 +102,4 @@ const AllCurrenciesScreen: React.FC<AllCurrenciesProps> = ({ navigation }) => {
     </View>
   );
 };
-export default AllCurrenciesScreen;
+export default AllCryptoAssetsScreen;

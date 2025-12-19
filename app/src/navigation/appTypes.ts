@@ -1,6 +1,6 @@
 export type AppStackParamList = {
   Main: undefined;
-  AllCurrencies: undefined;
+  AllCryptoAssets: undefined;
   BalanceTopUp: undefined;
   Exchange: {
     coinId: string;       
