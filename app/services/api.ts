@@ -60,6 +60,19 @@ $api.interceptors.request.use(async (config) => {
   return config;
 });
 
+$api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response) {
+       console.log('API Error:', error.response.status, error.response.data);
+    } else if (error.request) {
+       console.log('Network Error (Server down or wrong IP):', error.message);
+    } else {
+       console.log('Error:', error.message);
+    }
+    return Promise.reject(error);
+  }
+);
 
 // --- API METHODS ---
 export const authAPI = {
