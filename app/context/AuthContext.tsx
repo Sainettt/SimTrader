@@ -42,12 +42,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const credentials = await Keychain.getGenericPassword();
         
         if (credentials) {
+          // Сначала просто сохраняем данные в стейт, но НЕ ставим LoggedIn
+          const token = credentials.password;
+          
+          // ВАЖНО: Пробуем сделать запрос к api/user/auth (или любой защищенный роут)
+          // У вас в api.ts уже есть интерцептор, который подставит токен из Keychain
+          await authAPI.check(); 
+
+          // Если запрос прошел успешно (не вылетел в catch), значит токен живой
           setUserId(Number(credentials.username));
-          setToken(credentials.password);
-          setIsLoggedIn(true);
+          setToken(token);
+          setIsLoggedIn(true); 
         }
       } catch (error) {
-        console.log('Error loading session', error);
+        console.log('Session expired or invalid', error);
         await logout();
       } finally {
         setIsSplashLoading(false);

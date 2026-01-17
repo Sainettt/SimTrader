@@ -86,7 +86,7 @@ export const authAPI = {
         return response.data;
     },
     async check() {
-    const response = await $api.get('/user/auth'); 
+    const response = await $api.get('/auth/check'); 
     return response.data;
   }
 };
