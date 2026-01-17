@@ -1,6 +1,9 @@
 # Шаг 1: Берем легкий образ Node.js
 FROM node:20-alpine
 
+# --- ИСПРАВЛЕНИЕ: Устанавливаем OpenSSL для Prisma ---
+RUN apk add --no-cache openssl
+
 # Шаг 2: Указываем рабочую папку внутри контейнера
 WORKDIR /app
 
@@ -13,13 +16,11 @@ RUN npm install
 # Шаг 5: Копируем весь остальной код проекта
 COPY . .
 
-# Шаг 6: Генерируем Prisma Client (обязательно для Prisma!)
-# Это создаст типы и клиент на основе вашей schema.prisma
+# Шаг 6: Генерируем Prisma Client
 RUN npx prisma generate
 
-# Шаг 7: Открываем порт, который используется в index.ts
+# Шаг 7: Открываем порт
 EXPOSE 4000
 
-# Шаг 8: Запускаем команду для разработки
-# Она будет использовать nodemon, как указано в вашем package.json
+# Шаг 8: Запускаем
 CMD ["npm", "run", "dev"]
