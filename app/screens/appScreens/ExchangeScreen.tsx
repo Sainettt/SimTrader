@@ -223,6 +223,9 @@ const ExchangeScreen: React.FC<ExchangeScreenProps> = ({
         homePress={() => navigation.navigate('Main')}
         walletPress={() => navigation.navigate('Wallet')}
         transactionPress={() => {navigation.navigate('TransactionHistory')}}
+        settingsPress={() => {
+          navigation.navigate('Settings');
+        }}
       />
     </View>
   );

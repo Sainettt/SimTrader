@@ -130,6 +130,9 @@ const WalletScreen = ({ navigation }: any) => {
           homePress={() => navigation.navigate('Main')}
           walletPress={() => {}}
           transactionPress={() => navigation.navigate('TransactionHistory')}
+          settingsPress={() => {
+          navigation.navigate('Settings');
+        }}
         />
       </View>
     </SafeAreaView>

@@ -165,21 +165,30 @@ class AuthController {
             return res.status(500).json({ message: 'Login error' });
         }
     }
-    async check(req: AuthRequest, res: Response): Promise<any> {
+    async check(req: any, res: Response): Promise<any> {
         try {
-            const { id, email, userName, createdAt } = req.user;
-            
-            const token = generateJwt(id, email, userName, createdAt);
+            const { id } = req.user; 
+
+            const user = await prisma.user.findUnique({
+                where: { id: Number(id) }
+            });
+
+            if (!user) {
+                return res.status(401).json({ message: 'User not found' });
+            }
+
+            const token = generateJwt(user.id, user.email, user.username, user.createdAt);
 
             return res.json({
                 token,
                 user: {
-                    id,
-                    email,
-                    username: userName
+                    id: user.id,
+                    email: user.email,
+                    username: user.username
                 }
             });
         } catch (e) {
+            console.error(e);
             return res.status(500).json({ message: 'Server error' });
         }
     }

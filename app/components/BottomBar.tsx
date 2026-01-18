@@ -9,9 +9,10 @@ type BottomBarProps = {
     homePress: () => void;
     walletPress: () => void;
     transactionPress: () => void;
+    settingsPress: () => void;
 }
 
-const BottomBar: React.FC<BottomBarProps> = ({ homePress,  walletPress, transactionPress }) => {
+const BottomBar: React.FC<BottomBarProps> = ({ homePress,  walletPress, transactionPress, settingsPress }) => {
     return (
         <View style={appStyles.bottomBarContainer}>
             <TouchableOpacity onPress={homePress}>
@@ -22,6 +23,9 @@ const BottomBar: React.FC<BottomBarProps> = ({ homePress,  walletPress, transact
             </TouchableOpacity>
             <TouchableOpacity onPress={transactionPress}>
                 <Octicons name="history" size={40} color="#3C3C3C" />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={settingsPress}>
+                <Ionicons name="settings-sharp" size={40} color="#3C3C3C" />
             </TouchableOpacity>
         </View>
     )

@@ -109,6 +109,9 @@ const AllCryptoAssetsScreen: React.FC<AllCurrenciesProps> = ({
         transactionPress={() => {
           navigation.navigate('TransactionHistory');
         }}
+        settingsPress={() => {
+          navigation.navigate('Settings');
+        }}
       />
     </View>
   );

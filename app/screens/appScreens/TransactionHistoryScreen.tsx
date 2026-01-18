@@ -79,6 +79,9 @@ const TransactionHistoryScreen = ({ navigation }: any) => {
             homePress={() => navigation.navigate('Main')}
             walletPress={() => navigation.navigate('Wallet')}
             transactionPress={() => {}}
+            settingsPress={() => {
+          navigation.navigate('Settings');
+        }}
         />
       </View>
 

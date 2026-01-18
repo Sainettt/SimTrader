@@ -111,6 +111,9 @@ const MainScreen: React.FC<MainProps> = ({ navigation }: MainProps) => {
         homePress={() => {}}
         walletPress={() => navigation.navigate('Wallet')}
         transactionPress={() => {navigation.navigate('TransactionHistory')}}
+        settingsPress={() => {
+          navigation.navigate('Settings');
+        }}
       />
     </View>
   );

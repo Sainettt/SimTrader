@@ -30,28 +30,28 @@ const BalanceTopUpScreen: React.FC<BalanceTopUpScreenProps> = ({
   const [pln, setPln] = useState('0');
   const [usd, setUsd] = useState('0');
   const [rate, setRate] = useState<number | null>(null);
-  
+
   const [modalVisible, setModalVisible] = useState(false);
   const [_isProcessing, setIsProcessing] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
       const fetchRate = async () => {
-      try {
-        const response = await fetch(
-          'https://api.binance.com/api/v3/ticker/price?symbol=USDTPLN',
-        );
-        const data = await response.json();
-        if (data.price) {
-          setRate(parseFloat(data.price));
+        try {
+          const response = await fetch(
+            'https://api.binance.com/api/v3/ticker/price?symbol=USDTPLN',
+          );
+          const data = await response.json();
+          if (data.price) {
+            setRate(parseFloat(data.price));
+          }
+        } catch (error) {
+          console.error('Error fetching Binance rate:', error);
+          setRate(4.0);
         }
-      } catch (error) {
-        console.error('Error fetching Binance rate:', error);
-        setRate(4.0);
-      }
-    };
-    fetchRate();
-    }, [])
+      };
+      fetchRate();
+    }, []),
   );
 
   const handlePlnChange = (text: string) => {
@@ -98,27 +98,27 @@ const BalanceTopUpScreen: React.FC<BalanceTopUpScreenProps> = ({
   };
 
   const handleConfirmTopUp = async () => {
-
     if (!userId) {
-        Alert.alert("Error", "User not found");
-        return;
+      Alert.alert('Error', 'User not found');
+      return;
     }
     try {
-        setIsProcessing(true);
+      setIsProcessing(true);
 
-        const amountUSD = parseFloat(usd);
-            
-        await walletAPI.topUp(userId, amountUSD);
-        setModalVisible(false);
+      const amountUSD = parseFloat(usd);
 
-        Alert.alert('Success', `Successfully added ${usd} USD to your balance!`);
-        navigation.navigate('Main');
-    }
-    catch (error: any) {
+      await walletAPI.topUp(userId, amountUSD);
       setModalVisible(false);
-        Alert.alert('Top Up Failed', error.response?.data?.message || 'Transaction failed');
-    }
-    finally {
+
+      Alert.alert('Success', `Successfully added ${usd} USD to your balance!`);
+      navigation.navigate('Main');
+    } catch (error: any) {
+      setModalVisible(false);
+      Alert.alert(
+        'Top Up Failed',
+        error.response?.data?.message || 'Transaction failed',
+      );
+    } finally {
       setIsProcessing(false);
     }
   };
@@ -126,10 +126,7 @@ const BalanceTopUpScreen: React.FC<BalanceTopUpScreenProps> = ({
   return (
     <View style={appStyles.flexContainer}>
       <View style={appStyles.container}>
-        <UpperText
-          title="Top Up Balance"
-          onPress={() => navigation.goBack()}
-        />
+        <UpperText title="Top Up Balance" onPress={() => navigation.goBack()} />
 
         <View style={localStyles.contentCenter}>
           <View style={localStyles.inputsContainer}>
@@ -164,29 +161,39 @@ const BalanceTopUpScreen: React.FC<BalanceTopUpScreenProps> = ({
                   style={localStyles.marginIndicator}
                 />
               )}
-              <View style={[localStyles.currencyBadge, localStyles.currencyBadgeSecondary]}>
+              <View
+                style={[
+                  localStyles.currencyBadge,
+                  localStyles.currencyBadgeSecondary,
+                ]}
+              >
                 <Text style={localStyles.currencyTextSecondary}>PLN</Text>
               </View>
             </View>
           </View>
 
-          <TouchableOpacity 
+          <TouchableOpacity
             style={appStyles.topUpContinueButton}
             onPress={handleContinue}
           >
-            <Text style={localStyles.continueButtonText}> 
-                Continue 
-            </Text>
+            <Text style={localStyles.continueButtonText}>Continue</Text>
           </TouchableOpacity>
         </View>
       </View>
-      
+
       <BottomBar
         homePress={() => {
           navigation.navigate('Main');
         }}
-        walletPress={() => {navigation.navigate('Wallet')}}
-        transactionPress={() => {navigation.navigate('TransactionHistory')}}
+        walletPress={() => {
+          navigation.navigate('Wallet');
+        }}
+        transactionPress={() => {
+          navigation.navigate('TransactionHistory');
+        }}
+        settingsPress={() => {
+          navigation.navigate('Settings');
+        }}
       />
 
       <Modal
@@ -198,7 +205,7 @@ const BalanceTopUpScreen: React.FC<BalanceTopUpScreenProps> = ({
         <View style={localStyles.modalOverlay}>
           <View style={localStyles.modalContainer}>
             <Text style={localStyles.modalTitle}>Confirm Top Up</Text>
-            
+
             <Text style={localStyles.modalText}>
               Are you sure you want to add funds to your balance?
             </Text>
@@ -206,16 +213,18 @@ const BalanceTopUpScreen: React.FC<BalanceTopUpScreenProps> = ({
             <Text style={localStyles.modalAmount}>{usd} USD</Text>
 
             <View style={localStyles.modalButtonsRow}>
-
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={[localStyles.modalButton, localStyles.modalButtonCancel]}
                 onPress={() => setModalVisible(false)}
               >
                 <Text style={localStyles.modalButtonTextCancel}>Cancel</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity 
-                style={[localStyles.modalButton, localStyles.modalButtonConfirm]}
+              <TouchableOpacity
+                style={[
+                  localStyles.modalButton,
+                  localStyles.modalButtonConfirm,
+                ]}
                 onPress={handleConfirmTopUp}
               >
                 <Text style={localStyles.modalButtonTextConfirm}>Confirm</Text>
@@ -224,18 +233,17 @@ const BalanceTopUpScreen: React.FC<BalanceTopUpScreenProps> = ({
           </View>
         </View>
       </Modal>
-
     </View>
   );
 };
 
 const localStyles = StyleSheet.create({
   contentCenter: {
-    flex: 1, 
-    justifyContent: 'center', 
-    alignItems: 'center', 
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  inputsContainer: {marginTop: 150},
+  inputsContainer: { marginTop: 150 },
   inputRow: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -285,7 +293,9 @@ const localStyles = StyleSheet.create({
     marginRight: 10,
   },
   continueButtonText: {
-    fontFamily: 'Poppins-Bold', fontSize: 18, color: '#333'
+    fontFamily: 'Poppins-Bold',
+    fontSize: 18,
+    color: '#333',
   },
 
   // --- Styles for Modal ---
