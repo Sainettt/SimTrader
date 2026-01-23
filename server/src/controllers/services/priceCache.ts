@@ -20,7 +20,7 @@ export let sortedMarketCache: CoinData[] = [];
 const IGNORED_COINS = [
     'USDC', 'FDUSD', 'TUSD', 'USDP', 'DAI', 'BUSD', 
     'EUR', 'GBP', 'AUD', 'TRY', 'RUB', 'BRL',       
-    'WBTC'                                         
+    'WBTC', 'USD1', 'SENT'                                         
 ];
 
 export const startPriceUpdater = () => {
