@@ -15,8 +15,7 @@ import AuthSubmitButton from '../../components/AuthSubmitButton';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '../../src/navigation/authTypes';
 import { AuthContext } from '../../context/AuthContext';
-// 1. Импортируем компонент кнопки Google
-import { GoogleSigninButton } from '@react-native-google-signin/google-signin';
+import GoogleButton from '../../components/GoogleButton';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'Login'>;
 
@@ -71,12 +70,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }: Props) => {
             </View>
 
             {/* 3. Кнопка Google Sign-In */}
-            <GoogleSigninButton
-              style={{ width: '90%', height: 48 }}
-              size={GoogleSigninButton.Size.Wide}
-              color={GoogleSigninButton.Color.Dark} // Или .Light, если фон темный
-              onPress={loginWithGoogle}
-            />
+            <GoogleButton onPress={loginWithGoogle} disabled={isLoading} />
           </View>
         )}
 
