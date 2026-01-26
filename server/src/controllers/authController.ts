@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import prisma from '../prisma'
 import { isValidEmail, isValidPassword } from '../utils/validation'
+import crypto from 'node:crypto'
 
 const generateFakeCardNumber = () => {
   const part1 = Math.floor(1000 + Math.random() * 9000)
@@ -189,6 +190,7 @@ class AuthController {
       return res.status(500).json({ message: 'Login error' })
     }
   }
+  
   async check(req: any, res: Response): Promise<any> {
     try {
       const { id } = req.user
@@ -219,6 +221,90 @@ class AuthController {
     } catch (e) {
       console.error(e)
       return res.status(500).json({ message: 'Server error' })
+    }
+  }
+
+  async googleLogin(req: Request, res: Response): Promise<any> {
+    try {
+      const { email, userName, token } = req.body;
+
+      if (!email || !token) {
+        return res.status(400).json({ message: 'Email and token are required' });
+      }
+
+      // 1. Ищем пользователя
+      let user = await prisma.user.findUnique({
+        where: { email },
+        include: {
+            wallet: true,
+            bankCard: true
+        }
+      });
+
+      // 2. Если пользователя нет - регистрируем
+      if (!user) {
+        // Если поле password в БД обязательное, генерируем случайный хэш
+        const randomPassword = crypto.randomBytes(16).toString('hex');
+        const hashPassword = await bcrypt.hash(randomPassword, 5); 
+        
+        user = await prisma.user.create({
+          data: {
+            email,
+            username: userName || email.split('@')[0],
+            password: hashPassword, // Раскомментируйте, если пароль обязателен в схеме
+
+            // Сразу создаем карту и кошелек, как при обычной регистрации
+            bankCard: {
+              create: {
+                cardNumber: generateFakeCardNumber(),
+                cvv: generateRandomCVV(),
+                expiry: generateRandomExpiry(),
+                balance: 10000.0,
+              },
+            },
+            wallet: {
+              create: {
+                balanceUsd: 0.0,
+              },
+            },
+          },
+          include: {
+            wallet: true,
+            bankCard: true
+          },
+        });
+      }
+
+      // 3. Проверка на случай "старого" юзера без кошелька (для надежности)
+      if (!user.wallet) {
+         const newWallet = await prisma.wallet.create({
+            data: { userId: user.id, balanceUsd: 0.0 }
+         });
+         user.wallet = newWallet;
+      }
+
+      // 4. Генерируем НАШ токен
+      const jwtToken = generateJwt(
+        user.id,
+        user.email,
+        user.username,
+        user.createdAt
+      );
+
+      // 5. Возвращаем ответ
+      return res.json({
+        token: jwtToken,
+        user: {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+          walletUid: user.wallet?.walletUid,
+        },
+      });
+
+    } catch (e) {
+      console.error('Google login error:', e);
+      return res.status(500).json({ message: 'Google login error' });
     }
   }
 }

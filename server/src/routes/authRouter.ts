@@ -7,5 +7,5 @@ const router = Router();
 router.post('/registration', authController.registration);
 router.post('/login', authController.login);
 router.get('/check', authMiddleware, authController.check)
-
+router.post('/google', authController.googleLogin);
 export default router;

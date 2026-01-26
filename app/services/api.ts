@@ -88,7 +88,16 @@ export const authAPI = {
     async check() {
     const response = await $api.get('/auth/check'); 
     return response.data;
-  }
+  },
+  async googleLogin(idToken: string, email: string, name: string) {
+        // Send the ID token to the backend for verification and login/registration
+        const response = await $api.post('auth/google', { 
+            token: idToken, 
+            email, 
+            userName: name 
+        });
+        return response.data;
+    },
 };
 
 export const currencyAPI = {

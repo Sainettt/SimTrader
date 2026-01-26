@@ -2,7 +2,7 @@ import React, { createContext, useState, ReactNode, useEffect } from 'react';
 import { authAPI } from '../services/api';
 import { Alert } from 'react-native';
 import * as Keychain from 'react-native-keychain';
-
+import { GoogleSignin, statusCodes, isErrorWithCode } from '@react-native-google-signin/google-signin';
 // 1. Описываем тип для UserInfo (можно вынести в отдельный файл types.ts)
 type UserInfo = {
   id: number;
@@ -24,6 +24,7 @@ type AuthContextType = {
     password: string,
   ) => Promise<void>;
   logout: () => void;
+  loginWithGoogle: () => Promise<void>;
 };
 
 export const AuthContext = createContext<AuthContextType>({
@@ -36,6 +37,7 @@ export const AuthContext = createContext<AuthContextType>({
   login: async () => {},
   register: async () => {},
   logout: () => {},
+  loginWithGoogle: async () => {},
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -47,6 +49,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isSplashLoading, setIsSplashLoading] = useState(true);
 
   useEffect(() => {
+
+    GoogleSignin.configure({
+      // Here you should put your actual Web Client ID from Google Cloud Console
+      webClientId: '356867902645-k2kuaubk84cjmg1ngom4nqts9dfnljl0.apps.googleusercontent.com', 
+      offlineAccess: true,
+      scopes: ['profile', 'email'],
+    });
+
     const loadSession = async () => {
       try {
         const credentials = await Keychain.getGenericPassword();
@@ -137,8 +147,61 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const loginWithGoogle = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Проверяем сервисы
+      await GoogleSignin.hasPlayServices();
+      
+      // Открываем шторку выбора аккаунта
+      const userInfoResponse = await GoogleSignin.signIn();
+      
+      if (!userInfoResponse.data) {
+        throw new Error('No user data returned from Google');
+      }
+      const { idToken, user } = userInfoResponse.data;
+
+      if (!idToken) throw new Error('No ID token found');
+
+      // 5. Отправляем данные НА НАШ СЕРВЕР (через api.ts)
+      // В user.name может быть null, поэтому подстрахуемся
+      const data = await authAPI.googleLogin(idToken, user.email, user.name || 'User');
+
+      // 6. Если наш сервер ответил успехом, сохраняем сессию
+      if (data.token && data.user) {
+        await saveSession(data.token, data.user);
+      } else {
+        Alert.alert('Login Error', 'Server returned invalid data');
+      }
+
+    } catch (error) {
+      if (isErrorWithCode(error)) {
+        switch (error.code) {
+          case statusCodes.SIGN_IN_CANCELLED:
+            console.log('User cancelled the login flow');
+            break;
+          case statusCodes.IN_PROGRESS:
+            console.log('Sign in is in progress already');
+            break;
+          case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
+            Alert.alert('Error', 'Google Play Services not available');
+            break;
+          default:
+            Alert.alert('Google Error', error.message);
+        }
+      } else {
+        console.log('Backend or Other Error:', error);
+        Alert.alert('Login Error', 'Failed to authenticate with server');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const logout = async () => {
     try {
+      await GoogleSignin.signOut();
       await Keychain.resetGenericPassword();
       setToken(null);
       setUserId(null);
@@ -161,6 +224,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         login,
         register,
         logout,
+        loginWithGoogle,
       }}
     >
       {children}
