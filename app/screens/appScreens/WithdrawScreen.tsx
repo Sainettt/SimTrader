@@ -7,13 +7,20 @@ import UpperText from '../../components/UpperText';
 import BottomBar from '../../components/BottomBar';
 import { AuthContext } from '../../context/AuthContext';
 import { walletAPI } from '../../services/api';
+import { CustomAlert } from '../../components/CustomAlert';
 
 const WithdrawScreen = ({ navigation }: any) => {
     const { userId } = useContext(AuthContext);
     const [amount, setAmount] = useState('');
     const [loading, setLoading] = useState(false);
     const [availableBalance, setAvailableBalance] = useState<string | null>(null);
-
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertConfig, setAlertConfig] = useState({
+        title: '',
+        message: '',
+        type: 'success' as 'success' | 'error',
+      });
+      
     useFocusEffect(
         useCallback(() => {
             let isActive = true;
@@ -39,24 +46,42 @@ const WithdrawScreen = ({ navigation }: any) => {
 
     const handleWithdraw = async () => {
         if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
-            Alert.alert('Error', 'Please enter a valid amount');
+            setAlertConfig({
+                title: 'Error',
+                message: 'Please enter a valid amount',
+                type: 'error'
+              });
+              setAlertVisible(true);
             return;
         }
 
         if (availableBalance && Number(amount) > Number(availableBalance)) {
-            Alert.alert('Error', 'Insufficient funds');
+            setAlertConfig({
+                title: 'Error',
+                message: 'Insufficient funds',
+                type: 'error'
+              });
+              setAlertVisible(true);
             return;
         }
 
         setLoading(true);
         try {
             await walletAPI.withdraw(Number(userId), Number(amount));
-            Alert.alert('Success', 'Funds withdrawn to your card', [
-                { text: 'OK', onPress: () => navigation.goBack() }
-            ]);
+            setAlertConfig({
+                title: 'Success',
+                message: `${amount} USD withdrawn to your card`,
+                type: 'success'
+              });
+              setAlertVisible(true);
         } catch (e: any) {
             const msg = e.response?.data?.message || 'Withdrawal failed';
-            Alert.alert('Error', msg);
+            setAlertConfig({
+                title: 'Error',
+                message: msg,
+                type: 'error'
+              });
+              setAlertVisible(true);
         } finally {
             setLoading(false);
         }
@@ -125,6 +150,13 @@ const WithdrawScreen = ({ navigation }: any) => {
         }}
                 />
             </View>
+            <CustomAlert 
+        visible={alertVisible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        type={alertConfig.type}
+        onClose={() => setAlertVisible(false)}
+     />
         </SafeAreaView>
     );
 };

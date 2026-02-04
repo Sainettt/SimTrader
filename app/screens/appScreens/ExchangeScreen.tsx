@@ -17,6 +17,7 @@ import { currencyAPI, tradeAPI, walletAPI } from '../../services/api';
 import { CryptoChart } from '../../components/CryptoChart';
 import { IntervalSelector } from '../../components/IntervalSelector';
 import { AuthContext } from '../../context/AuthContext';
+import { CustomAlert } from '../../components/CustomAlert';
 
 type ExchangeScreenProps = NativeStackScreenProps<
   AppStackParamList,
@@ -54,6 +55,13 @@ const ExchangeScreen: React.FC<ExchangeScreenProps> = ({
     useState<string>('Loading...');
 
   const [isTrading, setIsTrading] = useState(false);
+
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertConfig, setAlertConfig] = useState({
+    title: '',
+    message: '',
+    type: 'success' as 'success' | 'error',
+  });
 
   const isLoaded = useRef(false);
 
@@ -127,22 +135,31 @@ const ExchangeScreen: React.FC<ExchangeScreenProps> = ({
     try {
       if (type === 'buy') {
         await tradeAPI.buy(userId, symbol, amount, Number(currentPrice));
-        Alert.alert(
-          'Success',
-          `Successfully bought ${amount.toFixed(6)} ${symbol}`,
-        );
+        setAlertConfig({
+           title: 'Success!',
+           message: `Successfully bought ${amount.toFixed(6)} ${symbol} (${(amount * Number(currentPrice)).toFixed(2)} USD)`,
+           type: 'success'
+       });
+       setAlertVisible(true);
       } else {
         await tradeAPI.sell(userId, symbol, amount, Number(currentPrice));
-        Alert.alert(
-          'Success',
-          `Successfully sold ${amount.toFixed(6)} ${symbol}`,
-        );
+        setAlertConfig({
+          title: 'Success!',
+          message: `Successfully sold ${amount.toFixed(6)} ${symbol} (${(amount * Number(currentPrice)).toFixed(2)} USD)`,
+          type: 'success'
+      });
+      setAlertVisible(true);
       }
 
       await fetchBalances();
     } catch (e: any) {
       const errorMsg = e.response?.data?.message || 'Transaction failed';
-      Alert.alert('Error', errorMsg);
+      setAlertConfig({
+        title: 'Error',
+        message: errorMsg,
+        type: 'error'
+      });
+      setAlertVisible(true);
     } finally {
       setIsTrading(false);
     }
@@ -153,11 +170,9 @@ const ExchangeScreen: React.FC<ExchangeScreenProps> = ({
 
   return (
     <View style={appStyles.flexContainer}>
+      
       <View style={appStyles.containerWithoutPadding}>
-        <UpperText
-          title={`${symbol}`}
-          onPress={() => navigation.goBack()}
-        />
+        <UpperText title={`${symbol}`} onPress={() => navigation.goBack()} />
 
         <View style={styles.mainCintentContainer}>
           <View>
@@ -222,11 +237,20 @@ const ExchangeScreen: React.FC<ExchangeScreenProps> = ({
       <BottomBar
         homePress={() => navigation.navigate('Main')}
         walletPress={() => navigation.navigate('Wallet')}
-        transactionPress={() => {navigation.navigate('TransactionHistory')}}
+        transactionPress={() => {
+          navigation.navigate('TransactionHistory');
+        }}
         settingsPress={() => {
           navigation.navigate('Settings');
         }}
       />
+      <CustomAlert 
+        visible={alertVisible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        type={alertConfig.type}
+        onClose={() => setAlertVisible(false)}
+     />
     </View>
   );
 };
@@ -236,12 +260,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 5,
   },
-  mainCintentContainer: { 
+  mainCintentContainer: {
     flex: 1,
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
   },
   rowDirectionContainer: {
-    flexDirection: 'row' 
+    flexDirection: 'row',
   },
   totalLabel: {
     color: '#AAAAAA',

@@ -17,6 +17,7 @@ import { AppStackParamList } from '../../src/navigation/appTypes';
 import UpperText from '../../components/UpperText';
 import { AuthContext } from '../../context/AuthContext';
 import { walletAPI } from '../../services/api';
+import { CustomAlert } from '../../components/CustomAlert';
 
 type BalanceTopUpScreenProps = NativeStackScreenProps<
   AppStackParamList,
@@ -30,7 +31,12 @@ const BalanceTopUpScreen: React.FC<BalanceTopUpScreenProps> = ({
   const [pln, setPln] = useState('0');
   const [usd, setUsd] = useState('0');
   const [rate, setRate] = useState<number | null>(null);
-
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertConfig, setAlertConfig] = useState({
+      title: '',
+      message: '',
+      type: 'success' as 'success' | 'error',
+    });
   const [modalVisible, setModalVisible] = useState(false);
   const [_isProcessing, setIsProcessing] = useState(false);
 
@@ -91,7 +97,12 @@ const BalanceTopUpScreen: React.FC<BalanceTopUpScreenProps> = ({
   const handleContinue = () => {
     const amount = parseFloat(usd);
     if (amount <= 0 || isNaN(amount)) {
-      Alert.alert('Error', 'Please enter a valid amount');
+      setAlertConfig({
+        title: 'Error',
+        message: 'Please enter a valid amount',
+        type: 'error'
+      });
+      setAlertVisible(true);
       return;
     }
     setModalVisible(true);
@@ -99,7 +110,12 @@ const BalanceTopUpScreen: React.FC<BalanceTopUpScreenProps> = ({
 
   const handleConfirmTopUp = async () => {
     if (!userId) {
-      Alert.alert('Error', 'User not found');
+      setAlertConfig({
+        title: 'Error',
+        message: 'User not authenticated',
+        type: 'error'
+      });
+      setAlertVisible(true);
       return;
     }
     try {
@@ -110,14 +126,21 @@ const BalanceTopUpScreen: React.FC<BalanceTopUpScreenProps> = ({
       await walletAPI.topUp(userId, amountUSD);
       setModalVisible(false);
 
-      Alert.alert('Success', `Successfully added ${usd} USD to your balance!`);
-      navigation.navigate('Main');
+      setAlertConfig({
+        title: 'Success!',
+        message: `Successfully topped up ${amountUSD.toFixed(2)} USD`,
+        type: 'success'
+      })
+      setAlertVisible(true);
+
     } catch (error: any) {
       setModalVisible(false);
-      Alert.alert(
-        'Top Up Failed',
-        error.response?.data?.message || 'Transaction failed',
-      );
+      setAlertConfig({
+        title: 'Error',
+        message: error.response?.data?.message || 'Top up failed',
+        type: 'error'
+      });
+      setAlertVisible(true);
     } finally {
       setIsProcessing(false);
     }
@@ -233,6 +256,18 @@ const BalanceTopUpScreen: React.FC<BalanceTopUpScreenProps> = ({
           </View>
         </View>
       </Modal>
+      <CustomAlert 
+        visible={alertVisible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        type={alertConfig.type}
+        onClose={() => {
+          setAlertVisible(false)
+          if (alertConfig.type === 'success') {
+            navigation.navigate('Main');
+          }
+        }}
+     />
     </View>
   );
 };
