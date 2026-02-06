@@ -63,8 +63,6 @@ export const startPriceUpdater = () => {
                 };
             });
 
-            console.log(`[Cron] Updated: Wallet Prices (${data.length}) & Clean Market List (${sortedMarketCache.length})`);
-
         } catch (error) {
             console.error('[Cron] Error updating market data:', error);
         }

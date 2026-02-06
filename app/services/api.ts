@@ -1,7 +1,7 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import * as Keychain from 'react-native-keychain';
 
-const API_URL = 'http://10.0.2.2:4000/api'; 
+const API_URL = 'http://57.128.194.112:4000/api'; 
 
 interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
   _retryCount?: number;

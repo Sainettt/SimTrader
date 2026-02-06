@@ -7,7 +7,6 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   Modal,
-  Alert,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { appStyles } from '../../styles/appStyles';
