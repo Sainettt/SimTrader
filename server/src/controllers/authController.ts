@@ -48,7 +48,7 @@ class AuthController {
         token,
         user: { id: user.id, email: user.email, username: user.username, walletUid },
       });
-    } catch (_e) {
+    } catch {
       return res.status(500).json({ message: 'Login error' });
     }
   }
@@ -71,7 +71,7 @@ class AuthController {
         token,
         user: { id: user.id, email: user.email, username: user.username, walletUid },
       });
-    } catch (_e) {
+    } catch {
       return res.status(500).json({ message: 'Google login error' });
     }
   }
@@ -83,7 +83,7 @@ class AuthController {
 
       const token = authService.generateJwt(user.id, user.email, user.username, user.createdAt);
       return res.json({ token, user: { id: user.id, email: user.email, username: user.username } });
-    } catch (_e) {
+    } catch {
       return res.status(500).json({ message: 'Server error' });
     }
   }

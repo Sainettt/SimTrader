@@ -1,5 +1,5 @@
 import binanceApi from './binanceApi';
-import { getTopCoinsFromCache, getTickerFromCache } from './priceCache';
+import { getTopCoinsFromCache } from './priceCache';
 
 class CurrencyService {
     /**

@@ -2,8 +2,14 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
+export interface UserPayload {
+    id: number;
+    email: string;
+    userName: string;
+    createdAt: Date;
+}
 export interface AuthRequest extends Request {
-    user?: any;
+    user?: UserPayload;
 }
 
 export const authMiddleware = (req: AuthRequest, res: Response, next: NextFunction): void => {
@@ -13,7 +19,6 @@ export const authMiddleware = (req: AuthRequest, res: Response, next: NextFuncti
     }
 
     try {
-        
         const token = req.headers.authorization?.split(' ')[1]; 
 
         if (!token) {
@@ -21,12 +26,12 @@ export const authMiddleware = (req: AuthRequest, res: Response, next: NextFuncti
             return; 
         }
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret') as UserPayload;
         
         req.user = decoded;
         
         next(); 
-    } catch (e) {
+    } catch (_e) {
         res.status(401).json({ message: "Not authorized" });
     }
 };

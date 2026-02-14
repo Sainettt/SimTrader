@@ -1,7 +1,12 @@
-import bcrypt from 'bcryptjs';
+
 import jwt from 'jsonwebtoken';
 import prisma from '../prisma';
-import crypto from 'node:crypto';
+import { User, Wallet, BankCard } from '@prisma/client';
+
+type UserWithDetails = User & {
+  bankCard: BankCard | null;
+  wallet: Wallet | null;
+};
 
 class AuthService {
   // --- Утилиты для генерации данных ---
@@ -69,7 +74,7 @@ class AuthService {
   /**
    * Метод для обеспечения наличия кошелька и карты у старых пользователей (Login Fix)
    */
-  async ensureWalletAndCard(user: any) {
+  async ensureWalletAndCard(user: UserWithDetails) {
 
     if (user.bankCard && user.wallet) {
       return user.wallet.walletUid;
