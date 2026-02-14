@@ -22,7 +22,7 @@ interface HistoryResponse {
 
 // Тип для Kline (свечи) от Binance: 
 // [0] OpenTime, [1] Open, [2] High, [3] Low, [4] Close, [5] Volume...
-type BinanceKline = [number, string, string, string, string, string, ...any[]];
+type BinanceKline = [number, string, string, string, string, string, ...unknown[]];
 
 class CurrencyService {
     /**

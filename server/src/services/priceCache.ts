@@ -21,7 +21,7 @@ export interface CoinData {
     change: number;
 }
 
-export let priceCache: Record<string, TickerData> = {};
+export const priceCache: Record<string, TickerData> = {};
 export let sortedMarketCache: CoinData[] = [];
 
 const IGNORED_COINS = [
