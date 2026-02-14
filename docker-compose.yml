@@ -18,12 +18,12 @@ services:
 
   # --- ТВОЙ БЭКЕНД ---
   backend:
-    build: .
+    build: ./server
     container_name: simtrader_backend
     ports:
       - "4000:4000"
     env_file:
-      - .env  # Читаем все переменные из файла (PORT, JWT_SECRET и т.д.)
+      - ./server/.env  # Читаем все переменные из файла (PORT, JWT_SECRET и т.д.)
     environment:
       # ПЕРЕОПРЕДЕЛЕНИЕ:
       # Специально для контейнера подменяем localhost на имя сервиса "postgres"
@@ -31,7 +31,7 @@ services:
     depends_on:
       - postgres
     volumes:
-      - ./:/app           # Проброс кода (чтобы работало обновление при сохранении)
+      - ./server:/app           # Проброс кода (чтобы работало обновление при сохранении)
       - /app/node_modules # Изоляция библиотек (используем те, что внутри Linux)
 
 volumes:
