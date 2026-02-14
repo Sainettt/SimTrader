@@ -1,39 +1,39 @@
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import authRouter from './routes/authRouter';
-import currencyRouter from './routes/currencyRouter';
-import walletRouter from './routes/walletRouter';
-import tradeRouter from './routes/tradeRouter';
-import { startPriceUpdater } from '../src/controllers/services/priceCache'
+import express from 'express'
+import cors from 'cors'
+import dotenv from 'dotenv'
+import authRouter from './routes/authRouter'
+import currencyRouter from './routes/currencyRouter'
+import walletRouter from './routes/walletRouter'
+import tradeRouter from './routes/tradeRouter'
+import { startPriceUpdater } from './services/priceCache'
 
-dotenv.config();
+dotenv.config()
 
-const app = express();
-const PORT = process.env.PORT || 5000;
+const app = express()
+const PORT = process.env.PORT || 5000
 
-app.use(cors()); 
-app.use(express.json()); 
+app.use(cors())
+app.use(express.json())
 
 app.use((req, res, next) => {
-    console.log(`[REQUEST] ${req.method} ${req.url}`);
-    next();
-});
+  console.log(`[REQUEST] ${req.method} ${req.url}`)
+  next()
+})
 
-app.use('/api/auth', authRouter);
-app.use('/api/currency', currencyRouter);
-app.use('/api/wallet', walletRouter);
-app.use('/api/trade', tradeRouter);
-startPriceUpdater();
+app.use('/api/auth', authRouter)
+app.use('/api/currency', currencyRouter)
+app.use('/api/wallet', walletRouter)
+app.use('/api/trade', tradeRouter)
+startPriceUpdater()
 
 const start = async () => {
-    try {
-        app.listen(PORT, () => {
-            console.log(`Server started on port ${PORT}`);
-        });
-    } catch (e) {
-        console.log(e);
-    }
-};
+  try {
+    app.listen(PORT, () => {
+      console.log(`Server started on port ${PORT}`)
+    })
+  } catch (e) {
+    console.log(e)
+  }
+}
 
-start();
+start()
