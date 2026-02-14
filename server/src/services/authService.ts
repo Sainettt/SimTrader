@@ -74,7 +74,7 @@ class AuthService {
   /**
    * Метод для обеспечения наличия кошелька и карты у старых пользователей (Login Fix)
    */
-  async ensureWalletAndCard(user: UserWithDetails) {
+  async ensureWalletAndCard(user: UserWithDetails): Promise<string | null | undefined> {
 
     if (user.bankCard && user.wallet) {
       return user.wallet.walletUid;

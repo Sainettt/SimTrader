@@ -61,8 +61,12 @@ class AuthController {
       if (!user) {
         const randomPassword = crypto.randomBytes(16).toString('hex');
         const hashPassword = await bcrypt.hash(randomPassword, 10);
+        // Тут создается новый пользователь с деталями
         user = await authService.createUserWithDetails(email, userName || email.split('@')[0], hashPassword);
       }
+
+      // Проверка на null обязательна для TS после поиска
+      if (!user) return res.status(500).json({ message: 'Error identifying user' });
 
       const walletUid = await authService.ensureWalletAndCard(user);
       const token = authService.generateJwt(user.id, user.email, user.username, user.createdAt);
@@ -78,11 +82,23 @@ class AuthController {
 
   async check(req: AuthRequest, res: Response): Promise<Response> {
     try {
-      const user = await authService.findUserById(Number(req.user?.id));
-      if (!user) return res.status(401).json({ message: 'Unauthorized' });
+      const userId = req.user?.id;
+      if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+
+      const user = await authService.findUserById(Number(userId));
+      // Обязательная проверка на существование пользователя
+      if (!user) return res.status(401).json({ message: 'User not found' });
 
       const token = authService.generateJwt(user.id, user.email, user.username, user.createdAt);
-      return res.json({ token, user: { id: user.id, email: user.email, username: user.username } });
+      
+      return res.json({ 
+        token, 
+        user: { 
+          id: user.id, 
+          email: user.email, 
+          username: user.username 
+        } 
+      });
     } catch {
       return res.status(500).json({ message: 'Server error' });
     }
