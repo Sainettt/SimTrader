@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import prisma from '../prisma';
 import { User, Wallet, BankCard } from '@prisma/client';
 
-type UserWithDetails = User & {
+export type UserWithDetails = User & {
   bankCard: BankCard | null;
   wallet: Wallet | null;
 };
@@ -34,14 +34,14 @@ class AuthService {
     );
   }
 
-  async findUserByEmail(email: string) {
+  async findUserByEmail(email: string): Promise<UserWithDetails | null> {
     return await prisma.user.findUnique({
       where: { email },
       include: { bankCard: true, wallet: true },
     });
   }
 
-  async findUserById(id: number) {
+  async findUserById(id: number): Promise<UserWithDetails | null> {
     return await prisma.user.findUnique({ where: { id }, include: { bankCard: true, wallet: true } });
   }
 
@@ -49,7 +49,7 @@ class AuthService {
    * Универсальный метод создания пользователя с кошельком и картой.
    * Используется и в обычной регистрации, и в Google Login.
    */
-  async createUserWithDetails(email: string, userName: string, passwordHash: string | null) {
+  async createUserWithDetails(email: string, userName: string, passwordHash: string | null): Promise<UserWithDetails> {
     return await prisma.user.create({
       data: {
         username: userName,
@@ -74,13 +74,12 @@ class AuthService {
   /**
    * Метод для обеспечения наличия кошелька и карты у старых пользователей (Login Fix)
    */
-  async ensureWalletAndCard(user: UserWithDetails): Promise<string | null | undefined> {
-
+  async ensureWalletAndCard(user: UserWithDetails): Promise<string | null> {
     if (user.bankCard && user.wallet) {
       return user.wallet.walletUid;
     }
 
-    return await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx) => {
       let walletUid = user.wallet?.walletUid;
 
       if (!user.bankCard) {
@@ -93,7 +92,6 @@ class AuthService {
             balance: 10000.0,
           },
         });
-        console.log(`[Service Fix] Created missing bank card for user ${user.id}`);
       }
 
       if (!user.wallet) {
@@ -101,11 +99,12 @@ class AuthService {
           data: { userId: user.id, balanceUsd: 0.0 },
         });
         walletUid = newWallet.walletUid;
-        console.log(`[Service Fix] Created missing Wallet for user ${user.id}`);
       }
 
       return walletUid;
     });
+
+    return result ?? null; // Гарантируем возврат string | null
   }
 }
 

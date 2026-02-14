@@ -1,9 +1,10 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
-import authService from '../services/authService';
+import authService, { UserWithDetails } from '../services/authService'; // Импорт типа
 import { isValidEmail, isValidPassword } from '../utils/validation';
 import crypto from 'node:crypto';
 import { AuthRequest } from '../middleware/authMiddleware';
+
 class AuthController {
   async registration(req: Request, res: Response): Promise<Response> {
     try {
@@ -17,16 +18,21 @@ class AuthController {
       if (existingUser) return res.status(400).json({ message: 'User already exists' });
 
       const hashPassword = await bcrypt.hash(password, 10);
-      const user = await authService.createUserWithDetails(email, userName, hashPassword);
+      const user: UserWithDetails = await authService.createUserWithDetails(email, userName, hashPassword);
 
       const token = authService.generateJwt(user.id, user.email, user.username, user.createdAt);
 
       return res.json({
         token,
-        user: { id: user.id, email: user.email, username: user.username, walletUid: user.wallet?.walletUid },
+        user: { 
+          id: user.id, 
+          email: user.email, 
+          username: user.username, 
+          walletUid: user.wallet?.walletUid 
+        },
       });
-    } catch (_e) {
-      console.error(_e);
+    } catch (error) {
+      console.error(error);
       return res.status(500).json({ message: 'Registration error' });
     }
   }
@@ -35,7 +41,7 @@ class AuthController {
     try {
       const { email, password } = req.body;
 
-      const user = await authService.findUserByEmail(email);
+      const user: UserWithDetails | null = await authService.findUserByEmail(email);
       if (!user || !user.password) return res.status(400).json({ message: 'Invalid credentials' });
 
       const isMatch = await bcrypt.compare(password, user.password);
@@ -48,7 +54,8 @@ class AuthController {
         token,
         user: { id: user.id, email: user.email, username: user.username, walletUid },
       });
-    } catch {
+    } catch (error) {
+      console.error(error);
       return res.status(500).json({ message: 'Login error' });
     }
   }
@@ -56,16 +63,15 @@ class AuthController {
   async googleLogin(req: Request, res: Response): Promise<Response> {
     try {
       const { email, userName } = req.body;
-      let user = await authService.findUserByEmail(email);
+      let user: UserWithDetails | null = await authService.findUserByEmail(email);
 
       if (!user) {
         const randomPassword = crypto.randomBytes(16).toString('hex');
         const hashPassword = await bcrypt.hash(randomPassword, 10);
-        // Тут создается новый пользователь с деталями
         user = await authService.createUserWithDetails(email, userName || email.split('@')[0], hashPassword);
       }
 
-      // Проверка на null обязательна для TS после поиска
+      // После этой проверки TS понимает, что user точно не null
       if (!user) return res.status(500).json({ message: 'Error identifying user' });
 
       const walletUid = await authService.ensureWalletAndCard(user);
@@ -75,7 +81,8 @@ class AuthController {
         token,
         user: { id: user.id, email: user.email, username: user.username, walletUid },
       });
-    } catch {
+    } catch (error) {
+      console.error(error);
       return res.status(500).json({ message: 'Google login error' });
     }
   }
@@ -86,7 +93,6 @@ class AuthController {
       if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
       const user = await authService.findUserById(Number(userId));
-      // Обязательная проверка на существование пользователя
       if (!user) return res.status(401).json({ message: 'User not found' });
 
       const token = authService.generateJwt(user.id, user.email, user.username, user.createdAt);
@@ -99,7 +105,8 @@ class AuthController {
           username: user.username 
         } 
       });
-    } catch {
+    } catch (error) {
+      console.error(error);
       return res.status(500).json({ message: 'Server error' });
     }
   }
