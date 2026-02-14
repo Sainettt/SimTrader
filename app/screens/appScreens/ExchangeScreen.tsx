@@ -5,7 +5,7 @@ import React, {
   useCallback,
   useContext,
 } from 'react';
-import { View, Text, StyleSheet, Dimensions, Alert } from 'react-native';
+import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { AppStackParamList } from '../../src/navigation/appTypes';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
