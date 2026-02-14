@@ -31,7 +31,7 @@ export const authMiddleware = (req: AuthRequest, res: Response, next: NextFuncti
         req.user = decoded;
         
         next(); 
-    } catch (_e) {
+    } catch {
         res.status(401).json({ message: "Not authorized" });
     }
 };

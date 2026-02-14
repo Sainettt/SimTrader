@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import authService from '../services/authService';
 import { isValidEmail, isValidPassword } from '../utils/validation';
 import crypto from 'node:crypto';
-
+import { AuthRequest } from '../middleware/authMiddleware';
 class AuthController {
   async registration(req: Request, res: Response): Promise<Response> {
     try {
@@ -76,9 +76,9 @@ class AuthController {
     }
   }
 
-  async check(req: any, res: Response): Promise<Response> {
+  async check(req: AuthRequest, res: Response): Promise<Response> {
     try {
-      const user = await authService.findUserById(Number(req.user.id));
+      const user = await authService.findUserById(Number(req.user?.id));
       if (!user) return res.status(401).json({ message: 'Unauthorized' });
 
       const token = authService.generateJwt(user.id, user.email, user.username, user.createdAt);

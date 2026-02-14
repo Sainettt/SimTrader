@@ -1,6 +1,13 @@
 import cron from 'node-cron';
 import binanceApi from './binanceApi';
 
+interface BinanceTicker {
+    symbol: string;
+    lastPrice: string;
+    priceChangePercent: string;
+    quoteVolume: string;
+}
+
 interface TickerData {
     price: number;
     changePercent: number;
@@ -31,7 +38,7 @@ export const startPriceUpdater = () => {
             const { data } = await binanceApi.get('/ticker/24hr');
             
             // 1. Here we are dont use filter. For all data to wallet (with USDC for exmpl)
-            data.forEach((ticker: any) => {
+            data.forEach((ticker: BinanceTicker) => {
                 priceCache[ticker.symbol] = {
                     price: parseFloat(ticker.lastPrice),
                     changePercent: parseFloat(ticker.priceChangePercent)
@@ -39,7 +46,7 @@ export const startPriceUpdater = () => {
             });
 
             // 2. Filter data for main and all assets screens
-            const marketPairs = data.filter((t: any) => {
+            const marketPairs = data.filter((t: BinanceTicker) => {
 
                 if (!t.symbol.endsWith('USDT')) return false;
                 const symbolClean = t.symbol.replace('USDT', '');
@@ -48,11 +55,11 @@ export const startPriceUpdater = () => {
                 return true;
             });
 
-            marketPairs.sort((a: any, b: any) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume));
+            marketPairs.sort((a: BinanceTicker, b: BinanceTicker) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume));
 
             const top100 = marketPairs.slice(0, 100);
 
-            sortedMarketCache = top100.map((t: any) => {
+            sortedMarketCache = top100.map((t: BinanceTicker) => {
                 const symbolClean = t.symbol.replace('USDT', '');
                 return {
                     id: symbolClean,

@@ -1,19 +1,42 @@
 import binanceApi from './binanceApi';
-import { getTopCoinsFromCache } from './priceCache';
+import { getTopCoinsFromCache, CoinData } from './priceCache';
+
+// 1. Описываем структуру курса
+interface SymbolPrice {
+    symbol: string;
+    price: string;
+}
+
+// 2. Описываем элемент графика
+interface ChartItem {
+    timestamp: number;
+    value: number;
+}
+
+// 3. Описываем итоговый объект истории
+interface HistoryResponse {
+    data: ChartItem[];
+    changePercent: string;
+    changeValue: string;
+}
+
+// Тип для Kline (свечи) от Binance: 
+// [0] OpenTime, [1] Open, [2] High, [3] Low, [4] Close, [5] Volume...
+type BinanceKline = [number, string, string, string, string, string, ...any[]];
 
 class CurrencyService {
     /**
      * Получение топа монет из кэша
      */
-    getTopCoins(limit: number) {
+    getTopCoins(limit: number): CoinData[] {
         return getTopCoinsFromCache(limit);
     }
 
     /**
      * Получение текущего курса конкретной монеты
      */
-    async getPrice(symbol: string) {
-        const response = await binanceApi.get('/ticker/price', {
+    async getPrice(symbol: string): Promise<SymbolPrice> {
+        const response = await binanceApi.get<SymbolPrice>('/ticker/price', {
             params: { symbol }
         });
         return response.data;
@@ -22,10 +45,9 @@ class CurrencyService {
     /**
      * Логика получения истории цен и расчет статистики
      */
-    async getHistoryData(symbol: string, period: string) {
+    async getHistoryData(symbol: string, period: string): Promise<HistoryResponse> {
         const pair = symbol.toUpperCase().endsWith('USDT') ? symbol : `${symbol}USDT`;
 
-        // Маппинг периода в настройки Binance (Бизнес-логика)
         let interval = '1h';
         let limit = 24;
 
@@ -38,17 +60,17 @@ class CurrencyService {
             default:   interval = '1h'; limit = 24; break;
         }
 
-        const response = await binanceApi.get('/klines', {
+        const response = await binanceApi.get<BinanceKline[]>('/klines', {
             params: { symbol: pair, interval, limit }
         });
 
-        // Форматирование данных для графика (Бизнес-логика)
-        const chartData = response.data.map((item: any) => ({
-            timestamp: item[0],
-            value: parseFloat(item[4])
+        // Форматирование данных
+        const chartData: ChartItem[] = response.data.map((item) => ({
+            timestamp: item[0], // Open time
+            value: parseFloat(item[4]) // Close price
         }));
 
-        // Расчет изменения (Бизнес-логика)
+        // Расчет изменения
         const firstPrice = chartData[0].value;
         const lastPrice = chartData[chartData.length - 1].value;
         const changeValue = lastPrice - firstPrice;
