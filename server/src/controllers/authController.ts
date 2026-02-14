@@ -5,7 +5,7 @@ import { isValidEmail, isValidPassword } from '../utils/validation';
 import crypto from 'node:crypto';
 
 class AuthController {
-  async registration(req: Request, res: Response): Promise<any> {
+  async registration(req: Request, res: Response): Promise<Response> {
     try {
       const { userName, email, password } = req.body;
 
@@ -25,13 +25,13 @@ class AuthController {
         token,
         user: { id: user.id, email: user.email, username: user.username, walletUid: user.wallet?.walletUid },
       });
-    } catch (e) {
-      console.error(e);
+    } catch (_e) {
+      console.error(_e);
       return res.status(500).json({ message: 'Registration error' });
     }
   }
 
-  async login(req: Request, res: Response): Promise<any> {
+  async login(req: Request, res: Response): Promise<Response> {
     try {
       const { email, password } = req.body;
 
@@ -48,12 +48,12 @@ class AuthController {
         token,
         user: { id: user.id, email: user.email, username: user.username, walletUid },
       });
-    } catch (e) {
+    } catch (_e) {
       return res.status(500).json({ message: 'Login error' });
     }
   }
 
-  async googleLogin(req: Request, res: Response): Promise<any> {
+  async googleLogin(req: Request, res: Response): Promise<Response> {
     try {
       const { email, userName } = req.body;
       let user = await authService.findUserByEmail(email);
@@ -71,19 +71,19 @@ class AuthController {
         token,
         user: { id: user.id, email: user.email, username: user.username, walletUid },
       });
-    } catch (e) {
+    } catch (_e) {
       return res.status(500).json({ message: 'Google login error' });
     }
   }
 
-  async check(req: any, res: Response): Promise<any> {
+  async check(req: any, res: Response): Promise<Response> {
     try {
       const user = await authService.findUserById(Number(req.user.id));
       if (!user) return res.status(401).json({ message: 'Unauthorized' });
 
       const token = authService.generateJwt(user.id, user.email, user.username, user.createdAt);
       return res.json({ token, user: { id: user.id, email: user.email, username: user.username } });
-    } catch (e) {
+    } catch (_e) {
       return res.status(500).json({ message: 'Server error' });
     }
   }
