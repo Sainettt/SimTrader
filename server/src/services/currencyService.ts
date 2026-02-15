@@ -41,7 +41,7 @@ class CurrencyService {
         });
         return response.data;
     }
-
+    //asdasdsad
     /**
      * Логика получения истории цен и расчет статистики
      */
