@@ -20,7 +20,8 @@ jobs:
       
       - name: Install Dependencies
         run: cd server && npm ci
-      
+      - name: Prisma
+        run: npx prisma generate
       - name: Type Check
         run: cd server && npm run type-check
 
