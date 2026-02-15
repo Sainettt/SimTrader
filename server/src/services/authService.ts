@@ -50,9 +50,6 @@ class AuthService {
     return user as UserWithDetails | null;
   }
 
-  /**
-   * Исправлен метод создания: добавлено 'as UserWithDetails'
-   */
   async createUserWithDetails(email: string, userName: string, passwordHash: string | null): Promise<UserWithDetails> {
     const user = await prisma.user.create({
       data: {
@@ -74,21 +71,21 @@ class AuthService {
       include: { wallet: true, bankCard: true },
     });
     
-    // ВАЖНО: Принудительно указываем тип
     return user as UserWithDetails;
   }
 
   /**
-   * Исправлен тип возврата: Promise<string | null>
+   * ИСПРАВЛЕНО: Теперь возвращает Promise<string>, так как мы гарантируем создание
    */
-  async ensureWalletAndCard(user: UserWithDetails): Promise<string | null> {
+  async ensureWalletAndCard(user: UserWithDetails): Promise<string> {
+    // 1. Если все есть, возвращаем сразу
     if (user.bankCard && user.wallet) {
       return user.wallet.walletUid;
     }
 
-    const result = await prisma.$transaction(async (tx) => {
-      let walletUid: string | null = user.wallet?.walletUid || null;
-
+    // 2. Если чего-то нет, создаем в транзакции
+    return await prisma.$transaction(async (tx) => {
+      // Проверяем и создаем карту
       if (!user.bankCard) {
         await tx.bankCard.create({
           data: {
@@ -99,19 +96,20 @@ class AuthService {
             balance: 10000.0,
           },
         });
+        console.log(`[Service Fix] Created missing bank card for user ${user.id}`);
       }
 
-      if (!user.wallet) {
+      // Проверяем и создаем кошелек (или возвращаем существующий)
+      if (user.wallet) {
+        return user.wallet.walletUid;
+      } else {
         const newWallet = await tx.wallet.create({
           data: { userId: user.id, balanceUsd: 0.0 },
         });
-        walletUid = newWallet.walletUid;
+        console.log(`[Service Fix] Created missing Wallet for user ${user.id}`);
+        return newWallet.walletUid;
       }
-
-      return walletUid;
     });
-
-    return result; 
   }
 }
 
