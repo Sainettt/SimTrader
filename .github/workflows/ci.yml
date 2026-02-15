@@ -14,14 +14,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
           cache-dependency-path: server/package-lock.json
       
       - name: Install Dependencies
         run: cd server && npm ci
       - name: Prisma
-        run: npx prisma generate
+        run: cd server && npx prisma generate
       - name: Type Check
         run: cd server && npm run type-check
 
@@ -32,7 +32,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
           cache-dependency-path: app/package-lock.json
       
