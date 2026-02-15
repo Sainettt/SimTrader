@@ -1,8 +1,8 @@
-
 import jwt from 'jsonwebtoken';
 import prisma from '../prisma';
 import { User, Wallet, BankCard } from '@prisma/client';
 
+// Определяем составной тип
 export type UserWithDetails = User & {
   bankCard: BankCard | null;
   wallet: Wallet | null;
@@ -39,7 +39,6 @@ class AuthService {
       where: { email },
       include: { bankCard: true, wallet: true },
     });
-    // Приведение типа, так как prisma возвращает User, а не UserWithDetails
     return user as UserWithDetails | null;
   }
 
@@ -52,11 +51,10 @@ class AuthService {
   }
 
   /**
-   * Универсальный метод создания пользователя с кошельком и картой.
-   * Используется и в обычной регистрации, и в Google Login.
+   * Исправлен метод создания: добавлено 'as UserWithDetails'
    */
   async createUserWithDetails(email: string, userName: string, passwordHash: string | null): Promise<UserWithDetails> {
-    return await prisma.user.create({
+    const user = await prisma.user.create({
       data: {
         username: userName,
         email,
@@ -75,10 +73,13 @@ class AuthService {
       },
       include: { wallet: true, bankCard: true },
     });
+    
+    // ВАЖНО: Принудительно указываем тип
+    return user as UserWithDetails;
   }
 
   /**
-   * Метод для обеспечения наличия кошелька и карты у старых пользователей (Login Fix)
+   * Исправлен тип возврата: Promise<string | null>
    */
   async ensureWalletAndCard(user: UserWithDetails): Promise<string | null> {
     if (user.bankCard && user.wallet) {
@@ -86,7 +87,7 @@ class AuthService {
     }
 
     const result = await prisma.$transaction(async (tx) => {
-      let walletUid = user.wallet?.walletUid;
+      let walletUid: string | null = user.wallet?.walletUid || null;
 
       if (!user.bankCard) {
         await tx.bankCard.create({
@@ -110,7 +111,7 @@ class AuthService {
       return walletUid;
     });
 
-    return result ?? null; // Гарантируем возврат string | null
+    return result; 
   }
 }
 
