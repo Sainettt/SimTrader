@@ -35,14 +35,20 @@ class AuthService {
   }
 
   async findUserByEmail(email: string): Promise<UserWithDetails | null> {
-    return await prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { email },
       include: { bankCard: true, wallet: true },
     });
+    // Приведение типа, так как prisma возвращает User, а не UserWithDetails
+    return user as UserWithDetails | null;
   }
 
   async findUserById(id: number): Promise<UserWithDetails | null> {
-    return await prisma.user.findUnique({ where: { id }, include: { bankCard: true, wallet: true } });
+    const user = await prisma.user.findUnique({ 
+        where: { id }, 
+        include: { bankCard: true, wallet: true } 
+    });
+    return user as UserWithDetails | null;
   }
 
   /**
