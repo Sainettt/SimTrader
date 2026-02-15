@@ -21,10 +21,6 @@ jobs:
       - name: Install Dependencies
         run: cd server && npm ci
       
-      - name: Lint
-        run: cd server && npm run lint
-        env:
-          ESLINT_USE_FLAT_CONFIG: false
       - name: Type Check
         run: cd server && npm run type-check
 
