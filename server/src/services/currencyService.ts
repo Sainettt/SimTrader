@@ -48,8 +48,8 @@ class CurrencyService {
     async getHistoryData(symbol: string, period: string): Promise<HistoryResponse> {
         const pair = symbol.toUpperCase().endsWith('USDT') ? symbol : `${symbol}USDT`;
 
-        let interval = '1h';
-        let limit = 24;
+        let interval: string;
+        let limit: number;
 
         switch (period) {
             case '1H': interval = '1m'; limit = 60; break;
