@@ -76,7 +76,7 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+  
           script: |
-            cd ~/SimTrader # Путь к папке с docker-compose.yml на сервере
-            docker-compose pull backend
-            docker-compose up -d
+            cd ~/simtrader # Путь к папке с docker-compose.yml на сервере
+            sudo docker compose up -d --build
