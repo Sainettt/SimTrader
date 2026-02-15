@@ -79,4 +79,5 @@ jobs:
   
           script: |
             cd ~/simtrader # Путь к папке с docker-compose.yml на сервере
+            git pull
             sudo docker compose up -d --build
