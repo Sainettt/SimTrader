@@ -62,7 +62,7 @@ class AuthController {
 
   async googleLogin(req: Request, res: Response): Promise<Response> {
     try {
-      const { email, userName } = req.body;
+      const { idToken,email, userName } = req.body;
       let user: UserWithDetails | null = await authService.findUserByEmail(email);
 
       if (!user) {
@@ -70,7 +70,9 @@ class AuthController {
         const hashPassword = await bcrypt.hash(randomPassword, 10);
         user = await authService.createUserWithDetails(email, userName || email.split('@')[0], hashPassword);
       }
-
+      
+      if (!idToken) return res.status(400).json({ message: 'Invalid idToken' });
+      console.log(idToken);
       // После этой проверки TS понимает, что user точно не null
       if (!user) return res.status(500).json({ message: 'Error identifying user' });
 
