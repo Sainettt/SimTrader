@@ -27,8 +27,8 @@ class AuthService {
 
   // --- Основная логика ---
   generateJwt(id: number, email: string, userName: string, createdAt: Date) {
-    const secret = process.env.JWT_SECRET;
-    if (!secret) throw new Error('JWT_SECRET is not defined');
+    const secret = process.env.JWT_SECRET_KEY;
+    if (!secret) throw new Error('JWT_SECRET_KEY is not defined');
     
     return jwt.sign(
       { id, email, userName, createdAt },

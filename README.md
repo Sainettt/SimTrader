@@ -54,7 +54,7 @@ Aby uruchomić projekt lokalnie, potrzebujesz:
 3.  Stwórz plik `.env` w katalogu `server/` i skonfiguruj połączenie z bazą:
     ```env
     DATABASE_URL="postgresql://uzytkownik:haslo@localhost:5432/simtrader_db"
-    JWT_SECRET="twoj_tajny_klucz_jwt"
+    JWT_SECRET_KEY="twoj_tajny_klucz_jwt"
     PORT=3000
     ```
 4.  Wykonaj migrację bazy danych (utworzenie tabel):

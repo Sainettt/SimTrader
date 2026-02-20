@@ -26,9 +26,9 @@ export const authMiddleware = (req: AuthRequest, res: Response, next: NextFuncti
             return; 
         }
 
-        const secret = process.env.JWT_SECRET;
+        const secret = process.env.JWT_SECRET_KEY;
         if (!secret) {
-            console.error('[CRITICAL] JWT_SECRET is not defined');
+            console.error('[CRITICAL] JWT_SECRET_KEY is not defined');
             res.status(500).json({ message: "Internal server error" });
             return;
         }
