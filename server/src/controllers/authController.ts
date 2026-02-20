@@ -62,18 +62,33 @@ class AuthController {
 
   async googleLogin(req: Request, res: Response): Promise<Response> {
     try {
-      const { idToken,email, userName } = req.body;
+      const { idToken } = req.body;
+      if (!idToken) return res.status(400).json({ message: 'Invalid idToken' });
+
+      const { OAuth2Client } = await import('google-auth-library');
+      const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+      
+      const ticket = await client.verifyIdToken({
+        idToken,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+
+      const payload = ticket.getPayload();
+      if (!payload || !payload.email) {
+        return res.status(400).json({ message: 'Invalid Google token payload' });
+      }
+
+      const email = payload.email;
+      const userName = payload.name || email.split('@')[0];
+
       let user: UserWithDetails | null = await authService.findUserByEmail(email);
 
       if (!user) {
         const randomPassword = crypto.randomBytes(16).toString('hex');
         const hashPassword = await bcrypt.hash(randomPassword, 10);
-        user = await authService.createUserWithDetails(email, userName || email.split('@')[0], hashPassword);
+        user = await authService.createUserWithDetails(email, userName, hashPassword);
       }
       
-      if (!idToken) return res.status(400).json({ message: 'Invalid idToken' });
-      console.log(idToken);
-      // После этой проверки TS понимает, что user точно не null
       if (!user) return res.status(500).json({ message: 'Error identifying user' });
 
       const walletUid = await authService.ensureWalletAndCard(user);

@@ -26,7 +26,14 @@ export const authMiddleware = (req: AuthRequest, res: Response, next: NextFuncti
             return; 
         }
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret') as UserPayload;
+        const secret = process.env.JWT_SECRET;
+        if (!secret) {
+            console.error('[CRITICAL] JWT_SECRET is not defined');
+            res.status(500).json({ message: "Internal server error" });
+            return;
+        }
+
+        const decoded = jwt.verify(token, secret) as UserPayload;
         
         req.user = decoded;
         
